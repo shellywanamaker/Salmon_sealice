@@ -18,6 +18,7 @@
 ## Specify the working directory for this job
 #SBATCH --workdir=/gscratch/srlab/strigg/analyses/20190729
 
+
 #align with bismark
 
 %%bash

@@ -18,6 +18,7 @@
 #SBATCH --workdir=/gscratch/srlab/strigg/analyses/20190730
 
 
+
 #align with bismark
 %%bash
 
