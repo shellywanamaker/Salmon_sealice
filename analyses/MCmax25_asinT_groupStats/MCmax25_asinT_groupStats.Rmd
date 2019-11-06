@@ -145,10 +145,12 @@ rownames(DMR_m) <- DMRs$ID
 ##ANOVA data
 aov_0.1_DMR_m <- DMR_m[which(rownames(DMR_m) %in% pull(DMR_1way_aov_inf_modelsumm[which(DMR_1way_aov_inf_modelsumm$p.value < 0.1),],ID)),]
 
+colnames(aov_0.1_DMR_m) <- gsub("methylation_level_","",colnames(aov_0.1_DMR_m))
+
 ColSideColors <- cbind(group = c(rep("plum2",4),rep("plum4",4),rep("green1",4),rep("green3",4),rep("magenta",2), rep("cyan",2)))
 
 jpeg("DMR_MCmax25DMR_Taov0.1_infest_heatmap.jpg", width = 800, height = 1000)
-heatmap.2(aov_0.1_DMR_m,margins = c(5,20), cexRow = 1.2, cexCol = 1,ColSideColors = ColSideColors, Colv=NA, col = bluered, na.color = "black", density.info = "none", trace = "none", scale = "row")
+heatmap.2(aov_0.1_DMR_m,margins = c(10,20), cexRow = 1.2, cexCol = 1,ColSideColors = ColSideColors, Colv=NA, col = bluered, na.color = "black", density.info = "none", trace = "none", scale = "row")
 dev.off()
 
 ```
