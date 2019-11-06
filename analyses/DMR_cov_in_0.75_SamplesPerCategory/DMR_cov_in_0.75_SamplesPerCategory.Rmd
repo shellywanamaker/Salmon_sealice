@@ -1,0 +1,31 @@
+---
+title: "Untitled"
+author: "Shelly Trigg"
+date: "11/3/2019"
+output: html_document
+---
+
+
+manually removed the "#" in front the chromosome column name before reading in files
+
+mount gannet
+
+read in  DMR table
+```{r}
+DMR <- read.table("/Volumes/web/metacarcinus/Salmo_Calig/analyses/20191030/DMR250bp_MAPQ20_MCmax25_cov5x_rms_results_collapsed.tsv", header = TRUE,sep = "\t",stringsAsFactors = FALSE)
+#loop through table and keep only lines where up to one sample contains NA for % methylation
+
+df <- data.frame() #create empty data frame to bind filtered rows into
+for(i in (1:nrow(DMR))){
+  GROUP1 <- DMR[i,7:10] #define columns from the category Day 0
+  GROUP2 <- DMR[i,11:14] #define columns from the category Day 10
+  GROUP3 <- DMR[i,15:18] #define columns from the category Day 135
+  GROUP4 <- DMR[i,19:22] #define columns from the category Day 145
+  if(length(which(is.na(GROUP1))) < 2 & length(which(is.na(GROUP2))) < 2 & length(which(is.na(GROUP3))) < 2 & length(which(is.na(GROUP4))) < 2){
+    df <- rbind(df,DMR[i,]) #conditional statement: if less than 2 sameples/category have NA for % methylation bind the whole row to the new dataframe
+  }
+}
+#write the output
+write.table(df,"DMR250bp_MCmax25_cov5x_rms_results_filtered.tsv", sep = "\t", row.names= FALSE, quote = FALSE)
+
+```
