@@ -305,11 +305,11 @@ plot DMRs with Temp x Salinity interaction effect significant at 0.1 TukHSD
 
 ``` r
 jpeg("DMR_MCmax25DMR_Taov0.1TxSPercMeth.jpg", width = 10, height = 4, units = "in", res = 300)
-p <- ggplot(data = DMRs_STACKED[which(DMRs_STACKED$ID %in% pull(DMR_tuk_TxS_summ[which(DMR_tuk_TxS_summ$adj.p.value < 0.1 & DMR_tuk_TxS_summ$term == "salinity"),],ID) & substr(DMRs_STACKED$group_name,1,4)!="CTRL"),],aes(x = group_name,y = perc.meth, color = group_name)) + facet_wrap(~ID, scale = "free") + theme_bw() + theme(axis.text.x = element_text(size = 7,angle = 45, hjust =1),axis.title=element_text(size=12,face="bold"))
+p <- ggplot(data = DMRs_STACKED[which(DMRs_STACKED$ID %in% pull(DMR_tuk_TxS_summ[which(DMR_tuk_TxS_summ$adj.p.value < 0.1 & DMR_tuk_TxS_summ$term == "temp:salinity"),],ID) & substr(DMRs_STACKED$group_name,1,4)!="CTRL"),],aes(x = group_name,y = perc.meth, color = group_name)) + facet_wrap(~ID, scale = "free") + theme_bw() + theme(axis.text.x = element_text(size = 7,angle = 45, hjust =1),axis.title=element_text(size=12,face="bold"))
 p + geom_jitter(width = 0.3) + ggtitle("DMRs that show a temp x salinity effect significant at TukeyHSD p.value < 0.1")
 ```
 
-    ## Warning: Removed 7 rows containing missing values (geom_point).
+    ## Warning: Removed 10 rows containing missing values (geom_point).
 
 ``` r
 dev.off()
