@@ -121,7 +121,7 @@ dev.off()
 
 plot DMRs significant at 0.05
 ```{r}
-jpeg("DMR_MCmax25DMR_Taov0.05InfestPercMeth.jpg", width = 17, height = 7, units = "in", res = 300)
+jpeg("DMR_MCmax25DMR_Taov0.05InfestPercMeth.jpg", width = 17, height = 12, units = "in", res = 300)
 p <- ggplot(data = DMRs_STACKED[which(DMRs_STACKED$ID %in% pull(DMR_1way_aov_inf_modelsumm[which(DMR_1way_aov_inf_modelsumm$p.value < 0.05),],ID)),],aes(x = biotic_stress,y = perc.meth, color = biotic_stress)) + facet_wrap(~ID, scale = "free") + theme_bw() + theme(axis.text.x = element_text(size = 7,angle = 45, hjust =1),axis.title=element_text(size=12,face="bold"))
 p + geom_jitter(width = 0.3) + ggtitle("DMRs that show an infestation effect significant at ANOVA p.value < 0.05")
 dev.off()
@@ -129,7 +129,7 @@ dev.off()
 
 plot DMRs significant at 0.1
 ```{r}
-jpeg("DMR_MCmax25DMR_Taov0.1InfestPercMeth.jpg", width = 17, height = 7, units = "in", res = 300)
+jpeg("DMR_MCmax25DMR_Taov0.1InfestPercMeth.jpg", width = 17, height = 12, units = "in", res = 300)
 p <- ggplot(data = DMRs_STACKED[which(DMRs_STACKED$ID %in% pull(DMR_1way_aov_inf_modelsumm[which(DMR_1way_aov_inf_modelsumm$p.value < 0.1),],ID)),],aes(x = biotic_stress,y = perc.meth, color = biotic_stress)) + facet_wrap(~ID, scale = "free") + theme_bw() + theme(axis.text.x = element_text(size = 7,angle = 45, hjust =1),axis.title=element_text(size=12,face="bold"))
 p + geom_jitter(width = 0.3) + ggtitle("DMRs that show an infestation effect significant at ANOVA p.value < 0.1")
 dev.off()
