@@ -190,11 +190,13 @@ write.csv(DMR_tuk_TxS_summ, "DMR_MCmax25_DMR_TukHSD_TxS_modelsumm.csv", row.name
 
 Create bed file for 24 DMRs with infestation effect significant at ANOVA p.value < 0.1
 ```{r}
-DMR_1way_aov_inf_modelsumm_4bed <- merge(DMRs[,c("ID","chr", "start","end")], DMR_1way_aov_inf_modelsumm, by = "ID")
+DMR_1way_aov_inf_modelsumm_4bed <- merge(DMRs[,c("ID","chr", "start","end")], DMR_1way_aov_inf_modelsumm[which(DMR_1way_aov_inf_modelsumm$p.value < 0.1),], by = "ID")
 
 DMR_1way_aov_inf_modelsumm_4bed <- DMR_1way_aov_inf_modelsumm_4bed[,2:4]
 
 write.table(DMR_1way_aov_inf_modelsumm_4bed, "DMR_2way_aov_infest_modelsumm_4bed.txt", sep = "\t", quote = FALSE, row.names = FALSE)
+
+write.table(DMR_1way_aov_inf_modelsumm_4bed, "DMR_1way_aov0.1_infest_modelsumm_4bed.txt", sep = "\t", quote = FALSE, row.names = FALSE)
 ```
 
 plot DMRs with salinity effect significant at adj.p.value < 0.1 TukHSD
