@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Session genome="/Volumes/web/metacarcinus/Salmo_Calig/GENOMES/v2/RefSeq/chr1-29MT/GCF_000233375.1_ICSASG_v2_genomic.fa" hasGeneTrack="false" hasSequenceTrack="true" locus="NC_027303.1:52265135-52268007" path="/Users/Shelly/Documents/GitHub/Salmon_sealice/analyses/20191115_anno/2wayAOVTxS_tuk0.05_DMR_DEGs_GFF.xml" version="8">
+    <Resources>
+        <Resource path="/Users/Shelly/Documents/GitHub/Salmon_sealice/data/mrna_flank2.5k.gff"/>
+        <Resource path="/Users/Shelly/Documents/GitHub/Salmon_sealice/data/DEG_temperature_NCid.bed"/>
+        <Resource path="/Users/Shelly/Documents/GitHub/Salmon_sealice/data/DEG_salinity_NCid.bed"/>
+        <Resource path="/Volumes/web/metacarcinus/Salmo_Calig/GENOMES/v2/RefSeq/ref_ICSASG_v2_top_level.gff3.gz"/>
+        <Resource path="/Users/Shelly/Documents/GitHub/Salmon_sealice/analyses/MCmax25_asinT_groupStats/DMS_2wayAOVTxStuk0.05.bed"/>
+        <Resource path="/Users/Shelly/Documents/GitHub/Salmon_sealice/analyses/MCmax25_asinT_groupStats/DMR_2wayAOVTxStuk0.05.bed"/>
+    </Resources>
+    <Panel height="357" name="FeaturePanel" width="1133">
+        <Track clazz="org.broad.igv.track.SequenceTrack" fontSize="10" id="Reference sequence" name="Reference sequence" visible="true"/>
+        <Track altColor="0,0,178" clazz="org.broad.igv.track.FeatureTrack" color="0,0,178" colorScale="ContinuousColorScale;0.0;1.0;255,255,255;0,0,178" fontSize="10" id="/Users/Shelly/Documents/GitHub/Salmon_sealice/analyses/MCmax25_asinT_groupStats/DMR_2wayAOVTxStuk0.05.bed" name="DMR_2wayAOVTxStuk0.05.bed" visible="true"/>
+        <Track altColor="0,0,178" clazz="org.broad.igv.track.FeatureTrack" color="0,0,178" colorScale="ContinuousColorScale;0.0;8934.0;255,255,255;0,0,178" fontSize="10" id="/Volumes/web/metacarcinus/Salmo_Calig/GENOMES/v2/RefSeq/ref_ICSASG_v2_top_level.gff3.gz" name="ref_ICSASG_v2_top_level.gff3.gz" visible="true"/>
+        <Track altColor="0,0,178" clazz="org.broad.igv.track.FeatureTrack" color="0,0,178" colorScale="ContinuousColorScale;0.0;6.0;255,255,255;0,0,178" fontSize="10" id="/Users/Shelly/Documents/GitHub/Salmon_sealice/data/DEG_temperature_NCid.bed" name="DEG_temperature_NCid.bed" visible="true"/>
+        <Track altColor="0,0,178" clazz="org.broad.igv.track.FeatureTrack" color="0,0,178" colorScale="ContinuousColorScale;0.0;7.0;255,255,255;0,0,178" fontSize="10" id="/Users/Shelly/Documents/GitHub/Salmon_sealice/data/DEG_salinity_NCid.bed" name="DEG_salinity_NCid.bed" visible="true"/>
+        <Track altColor="0,0,178" clazz="org.broad.igv.track.FeatureTrack" color="0,0,178" colorScale="ContinuousColorScale;0.0;9.0;255,255,255;0,0,178" fontSize="10" id="/Users/Shelly/Documents/GitHub/Salmon_sealice/analyses/MCmax25_asinT_groupStats/DMS_2wayAOVTxStuk0.05.bed" name="DMS_2wayAOVTxStuk0.05.bed" visible="true"/>
+        <Track clazz="org.broad.igv.track.FeatureTrack" color="0,0,178" fontSize="10" id="/Users/Shelly/Documents/GitHub/Salmon_sealice/data/mrna_flank2.5k.gff" name="mrna_flank2.5k.gff" visible="true"/>
+    </Panel>
+    <PanelLayout dividerFractions="0.016304347826086956"/>
+    <HiddenAttributes>
+        <Attribute name="DATA FILE"/>
+        <Attribute name="DATA TYPE"/>
+        <Attribute name="NAME"/>
+    </HiddenAttributes>
+</Session>

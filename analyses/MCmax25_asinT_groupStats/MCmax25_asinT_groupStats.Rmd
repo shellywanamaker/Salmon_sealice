@@ -14,12 +14,16 @@ library(gplots)
 library(ggplot2)
 library(dplyr)
 library(broom)
-
+library(RColorBrewer)
 ```
 
 read in data
 ```{r}
 DMRs <- read.table("../DMR_cov_in_0.75_SamplesPerCategory/DMR250bp_MCmax25_cov5x_rms_results_filtered.tsv", header = TRUE, sep = "\t")
+
+
+#write out bedfile
+write.table(DMRs[,1:4],"DMR250bp_MCmax25_cov5x_0.75xGroup.bed", sep = "\t",quote = FALSE, row.names = FALSE, col.names = FALSE )
 
 ```
 
@@ -109,6 +113,11 @@ do(meth_aov_models = aov(perc.meth~biotic_stress, data =  . ))
 #summarize ANOVA data
 DMR_1way_aov_inf_modelsumm <- glance(DMR_1way_aov_inf, meth_aov_models)
 write.csv(DMR_1way_aov_inf_modelsumm, "DMR_MCmax25_1wayAOV_infest_modelsumm.csv", row.names = FALSE, quote = FALSE)
+
+
+
+
+
 ```
 
 plot DMRs significant at 0.01
@@ -142,6 +151,24 @@ plot heatmap of DMRs significant at 0.1
 DMR_m <- as.matrix(DMRs[,7:26])
 rownames(DMR_m) <- DMRs$ID
 
+
+#calculate group means
+#group means
+Mean16C32psu <- rowMeans(DMR_m[,grep("16C_32psu", colnames(DMR_m))], na.rm = TRUE)
+
+Mean16C26psu <- rowMeans(DMR_m[,grep("16C_26psu", colnames(DMR_m))], na.rm = TRUE)
+
+Mean8C32psu <- rowMeans(DMR_m[,grep("8C_32psu", colnames(DMR_m))], na.rm = TRUE)
+
+Mean8C26psu <- rowMeans(DMR_m[,grep("8C_26psu", colnames(DMR_m))], na.rm = TRUE)
+
+MeanCTRL8C <- rowMeans(DMR_m[,grep("CTRL_8C_26psu", colnames(DMR_m))], na.rm = TRUE)
+
+MeanCTRL16C <- rowMeans(DMR_m[,grep("CTRL_16C_26psu", colnames(DMR_m))], na.rm = TRUE)
+
+DMR_mean_m <- as.matrix(data.frame(cbind(Mean8C26psu,Mean8C32psu,Mean16C26psu,Mean16C32psu,MeanCTRL8C, MeanCTRL16C)))
+
+
 ##ANOVA data
 aov_0.1_DMR_m <- DMR_m[which(rownames(DMR_m) %in% pull(DMR_1way_aov_inf_modelsumm[which(DMR_1way_aov_inf_modelsumm$p.value < 0.1),],ID)),]
 
@@ -153,9 +180,188 @@ jpeg("DMR_MCmax25DMR_Taov0.1_infest_heatmap.jpg", width = 800, height = 1000)
 heatmap.2(aov_0.1_DMR_m,margins = c(10,20), cexRow = 1.2, cexCol = 1,ColSideColors = ColSideColors, Colv=NA, col = bluered, na.color = "black", density.info = "none", trace = "none", scale = "row")
 dev.off()
 
+
+#plot heatmap of mean methylation
+uninf_mean <- rowMeans(aov_0.1_DMR_m[,grep("CTRL", colnames(aov_0.1_DMR_m))], na.rm = TRUE)
+inf_mean <- rowMeans(aov_0.1_DMR_m[,-grep("CTRL", colnames(aov_0.1_DMR_m))], na.rm = TRUE)
+
+Mean16C32psu <- rowMeans(aov_0.1_DMR_m[,grep("16C_32psu", colnames(aov_0.1_DMR_m))], na.rm = TRUE)
+
+Mean16C26psu <- rowMeans(aov_0.1_DMR_m[,grep("16C_26psu", colnames(aov_0.1_DMR_m))], na.rm = TRUE)
+
+Mean8C32psu <- rowMeans(aov_0.1_DMR_m[,grep("8C_32psu", colnames(aov_0.1_DMR_m))], na.rm = TRUE)
+
+Mean8C26psu <- rowMeans(aov_0.1_DMR_m[,grep("8C_26psu", colnames(aov_0.1_DMR_m))], na.rm = TRUE)
+
+
+aov_0.1_DMR_mean_m <- as.matrix(data.frame(cbind(Mean8C26psu,Mean8C32psu,Mean16C26psu,Mean16C32psu,uninf_mean)))
+
+jpeg("DMR_MCmax25DMR_Taov0.1_infest_mean_heatmap.jpg", width = 8, height = 10, units = "in", res = 300)
+ColSideColors <-  c("cyan", "darkcyan", "magenta", "darkmagenta","darkgray")
+heatmap.2(aov_0.1_DMR_mean_m,margins = c(10,20), cexRow = 1.2, cexCol = 1, Colv=NA, ColSideColors = ColSideColors,col = bluered, na.color = "black", density.info = "none", trace = "none", scale = "row")
+dev.off()
 ```
 
 For the 24 DMRs significant at anova p.value of 0.1, do any show significant effect of temperature, salinity, or their interaction?
+
+
+
+**Hypotehsis: there is no effect from temperature, salinity, or their interaction**
+```{r}
+DMR_2way_aov_tempxsal_nC <- DMRs_STACKED_asin[,-grep("CTRL",DMRs_STACKED_asin$group_name)] %>% group_by(ID) %>%
+do(meth_aov_models = aov(perc.meth~temp*salinity, data =  . ))
+#summarize ANOVA data
+DMR_2way_aov_tempxsal_nC_modelsumm <- glance(DMR_2way_aov_tempxsal_nC, meth_aov_models)
+```
+plot significant regions
+```{r}
+jpeg("DMR_MCmax25DMR_Taov0.01TxSPercMeth.jpg", width = 17, height = 12, units = "in", res = 300)
+p <- ggplot(data = DMRs_STACKED[which(DMRs_STACKED$ID %in% pull(DMR_2way_aov_tempxsal_nC_modelsumm[which(DMR_2way_aov_tempxsal_nC_modelsumm$p.value < 0.01),],ID) & substr(DMRs_STACKED$group_name, 1,4)!="CTRL"),],aes(x = group_name,y = perc.meth, color = group_name)) + facet_wrap(~ID, scale = "free") + theme_bw() + theme(axis.text.x = element_text(size = 7,angle = 45, hjust =1),axis.title=element_text(size=12,face="bold"))
+p + geom_jitter(width = 0.3) +  ggtitle("DMRs that show an overall TxS model effect significant at ANOVA p.value < 0.01")
+dev.off()
+
+jpeg("DMR_MCmax25DMR_Taov0.05TxSPercMeth.jpg", width = 17, height = 12, units = "in", res = 300)
+p <- ggplot(data = DMRs_STACKED[which(DMRs_STACKED$ID %in% pull(DMR_2way_aov_tempxsal_nC_modelsumm[which(DMR_2way_aov_tempxsal_nC_modelsumm$p.value < 0.05),],ID) & substr(DMRs_STACKED$group_name, 1,4)!="CTRL"),],aes(x = group_name,y = perc.meth, color = group_name)) 
+
+p + geom_boxplot()+ geom_jitter(width = 0.3) + ggtitle("DMRs that show an overall TxS model effect significant at ANOVA p.value < 0.05") + facet_wrap(~ID, scale = "free") +theme_bw() + theme(axis.text.x = element_text(size = 7,angle = 45, hjust =1),axis.title=element_text(size=12,face="bold"))
+dev.off()
+```
+
+plot heatmap of TxS 0.05 sig DMRs
+```{r}
+aov_0.05TxS_DMR_m <- DMR_m[which(rownames(DMR_m) %in% pull(DMR_2way_aov_tempxsal_nC_modelsumm[which(DMR_2way_aov_tempxsal_nC_modelsumm$p.value < 0.05),],ID)),]
+
+colnames(aov_0.05TxS_DMR_m) <- gsub("methylation_level_","",colnames(aov_0.05TxS_DMR_m))
+
+ColSideColors <- cbind(group = c(rep("magenta",4),rep("darkmagenta",4),rep("cyan",4),rep("darkcyan",4),rep("thistle1",2), rep("lightcyan1",2)))
+
+jpeg("DMR_MCmax25DMR_Taov0.05_TxS_heatmap.jpg", width = 800, height = 1000)
+heatmap.2(aov_0.05TxS_DMR_m,margins = c(10,20), cexRow = 1.2, cexCol = 1,ColSideColors = ColSideColors, Colv=NA, col = bluered, na.color = "black", density.info = "none", trace = "none", scale = "row")
+dev.off()
+
+#group means
+Mean16C32psu <- rowMeans(aov_0.05TxS_DMR_m[,grep("16C_32psu", colnames(aov_0.05TxS_DMR_m))], na.rm = TRUE)
+
+Mean16C26psu <- rowMeans(aov_0.05TxS_DMR_m[,grep("16C_26psu", colnames(aov_0.05TxS_DMR_m))], na.rm = TRUE)
+
+Mean8C32psu <- rowMeans(aov_0.05TxS_DMR_m[,grep("8C_32psu", colnames(aov_0.05TxS_DMR_m))], na.rm = TRUE)
+
+Mean8C26psu <- rowMeans(aov_0.05TxS_DMR_m[,grep("8C_26psu", colnames(aov_0.05TxS_DMR_m))], na.rm = TRUE)
+
+MeanCTRL8C <- rowMeans(aov_0.05TxS_DMR_m[,grep("CTRL_8C_26psu", colnames(aov_0.05TxS_DMR_m))], na.rm = TRUE)
+
+MeanCTRL16C <- rowMeans(aov_0.05TxS_DMR_m[,grep("CTRL_16C_26psu", colnames(aov_0.05TxS_DMR_m))], na.rm = TRUE)
+
+
+aov_0.05TxS_DMR_mean_m <- as.matrix(data.frame(cbind(Mean8C26psu,Mean8C32psu,Mean16C26psu,Mean16C32psu,MeanCTRL8C, MeanCTRL16C)))
+
+ColSideColors <- cbind(group = c(rep("cyan",1),rep("darkcyan",1),rep("magenta",1),rep("darkmagenta",1), rep("lightcyan1",1),rep("thistle1",1)))
+col <- colorRampPalette(brewer.pal(10, "RdYlBu"))(256)
+jpeg("DMR_MCmax25DMR_Taov0.05_TxSmean_heatmap.jpg", width = 800, height = 1000)
+heatmap.2(aov_0.05TxS_DMR_mean_m,margins = c(10,20), cexRow = 1.2, cexCol = 1,ColSideColors = ColSideColors, Colv=NA, col = rev(col), na.color = "black", density.info = "none", trace = "none", scale = "row")
+dev.off()
+
+
+
+###try a looser cutoff of 0.1
+aov_0.1TxS_DMR_m <- DMR_m[which(rownames(DMR_m) %in% pull(DMR_2way_aov_tempxsal_nC_modelsumm[which(DMR_2way_aov_tempxsal_nC_modelsumm$p.value < 0.1),],ID)),]
+
+colnames(aov_0.1TxS_DMR_m) <- gsub("methylation_level_","",colnames(aov_0.1TxS_DMR_m))
+
+
+#group means
+Mean16C32psu <- rowMeans(aov_0.1TxS_DMR_m[,grep("16C_32psu", colnames(aov_0.1TxS_DMR_m))], na.rm = TRUE)
+
+Mean16C26psu <- rowMeans(aov_0.1TxS_DMR_m[,grep("16C_26psu", colnames(aov_0.1TxS_DMR_m))], na.rm = TRUE)
+
+Mean8C32psu <- rowMeans(aov_0.1TxS_DMR_m[,grep("8C_32psu", colnames(aov_0.1TxS_DMR_m))], na.rm = TRUE)
+
+Mean8C26psu <- rowMeans(aov_0.1TxS_DMR_m[,grep("8C_26psu", colnames(aov_0.1TxS_DMR_m))], na.rm = TRUE)
+
+MeanCTRL8C <- rowMeans(aov_0.1TxS_DMR_m[,grep("CTRL_8C_26psu", colnames(aov_0.1TxS_DMR_m))], na.rm = TRUE)
+
+MeanCTRL16C <- rowMeans(aov_0.1TxS_DMR_m[,grep("CTRL_16C_26psu", colnames(aov_0.1TxS_DMR_m))], na.rm = TRUE)
+
+
+aov_0.1TxS_DMR_mean_m <- as.matrix(data.frame(cbind(MeanCTRL8C, Mean8C26psu,Mean8C32psu,MeanCTRL16C,Mean16C26psu,Mean16C32psu)))
+ColSideColors <- cbind(group = c(rep("lightcyan1",1),rep("cyan",1),rep("darkcyan",1),rep("thistle1",1),rep("magenta",1),rep("darkmagenta",1)))
+col <- colorRampPalette(brewer.pal(5, "RdBu"))(256)
+jpeg("DMR_MCmax25DMR_Taov0.1_TxSmean_heatmap.jpg", width = 800, height = 1000)
+heatmap.2(aov_0.1TxS_DMR_mean_m,margins = c(10,20), cexRow = 1.2, cexCol = 1,ColSideColors = ColSideColors, Colv=NA, col = rev(col), na.color = "black",sepwidth=c(0.025,0.025), sepcolor="darkgray",colsep=1:ncol(aov_0.1TxS_DMR_mean_m),rowsep=1:nrow(aov_0.1TxS_DMR_mean_m), density.info = "none", trace = "none", scale = "row")
+dev.off()
+```
+
+
+run tukey
+```{r}
+#subset data for DMRs with TxS 2way ANOVA p.value < 0.1 and run tukey HSD for each DMR
+DMR_tuk_tempxsal_nC <- DMRs_STACKED_asin[,-grep("CTRL",DMRs_STACKED_asin$group_name)] %>% group_by(ID) %>%
+do(meth_tuk_models = TukeyHSD(aov(perc.meth~temp*salinity, data =  . )))
+#summarize ANOVA data
+DMR_2way_aov_tempxsal_nC_modelsumm <- glance(DMR_2way_aov_tempxsal_nC, meth_tuk_models)
+  
+#summarize TukeyHSD results
+DMR_tuk_tempxsal_nC_summ <- tidy(DMR_tuk_tempxsal_nC, meth_tuk_models)
+```
+
+
+try plotting heatmap of tukey
+
+```{r}
+
+tukTxS_0.05sal_DMR_mean_m <- DMR_mean_m[which(rownames(DMR_mean_m) %in% pull(DMR_tuk_tempxsal_nC_summ[which(DMR_tuk_tempxsal_nC_summ$adj.p.value < 0.05 & DMR_tuk_tempxsal_nC_summ$term == "salinity"),],ID)),]
+
+colnames(tukTxS_0.05sal_DMR_mean_m) <- gsub("methylation_level_","",colnames(tukTxS_0.05sal_DMR_mean_m))
+
+#reorder columns so samples with same salinities are next to each other
+tukTxS_0.05sal_DMR_mean_m <- tukTxS_0.05sal_DMR_mean_m[,c(2,4,1,3,5,6)]
+
+#simplify rownames and reorder columns 
+rownames(tukTxS_0.05sal_DMR_mean_m) <- order(rownames(tukTxS_0.05sal_DMR_mean_m))
+
+#define column (group) colors
+ColSideColors <- cbind(group = c(rep("darkcyan",1),rep("darkmagenta",1),rep("cyan",1),rep("magenta",1),rep("lightcyan1",1),rep("thistle1",1)))
+
+#define palate for heatmap
+col <- colorRampPalette(brewer.pal(5, "RdBu"))(256)
+
+
+#heatmap with clustered groups and simplified numbers
+jpeg("DMR_MCmax25DMR_TtukTxS0.05sal_mean_heatmap.jpg", width = 800, height = 1000)
+heatmap.2(tukTxS_0.05sal_DMR_mean_m,margins = c(10,20), cexRow = 1.5, cexCol = 1,ColSideColors = ColSideColors, Colv= NA,col = rev(col), na.color = "darkgray",sepwidth=c(0.025,0.025), sepcolor="darkgray",colsep=1:ncol(tukTxS_0.05sal_DMR_mean_m),rowsep=1:nrow(tukTxS_0.05sal_DMR_mean_m), density.info = "none", trace = "none", scale = "row")
+dev.off()
+
+
+#heatmap.2(tukTxS_0.05sal_DMR_mean_m,margins = c(10,20), cexRow = 1.2, cexCol = 1,ColSideColors = ColSideColors, col = rev(col), na.color = "black",sepwidth=c(0.025,0.025), sepcolor="darkgray",colsep=1:ncol(tukTxS_0.05sal_DMR_mean_m),rowsep=1:nrow(tukTxS_0.05sal_DMR_mean_m), density.info = "none", trace = "none", scale = "row")
+
+#temp < 0.05
+tukTxS_0.05temp_DMR_mean_m <- DMR_mean_m[which(rownames(DMR_mean_m) %in% pull(DMR_tuk_tempxsal_nC_summ[which(DMR_tuk_tempxsal_nC_summ$adj.p.value < 0.05 & DMR_tuk_tempxsal_nC_summ$term == "temp"),],ID)),]
+
+colnames(tukTxS_0.05temp_DMR_mean_m) <- gsub("methylation_level_","",colnames(tukTxS_0.05temp_DMR_mean_m))
+
+#simplify row names
+rownames(tukTxS_0.05temp_DMR_mean_m) <- order(rownames(tukTxS_0.05temp_DMR_mean_m))
+
+#define column (group) colors
+ColSideColors <- cbind(group = c(rep("cyan",1),rep("darkcyan",1),rep("magenta",1),rep("darkmagenta",1),rep("lightcyan1",1),rep("thistle1",1)))
+
+col <- colorRampPalette(brewer.pal(5, "RdBu"))(256)
+jpeg("DMR_MCmax25DMR_TtukTxS0.05temp_mean_heatmap.jpg", width = 800, height = 1000)
+heatmap.2(tukTxS_0.05temp_DMR_mean_m,margins = c(10,20), cexRow = 2, cexCol = 1,ColSideColors = ColSideColors, Colv=NA, col = rev(col), na.color = "black",sepwidth=c(0.025,0.025), sepcolor="darkgray",colsep=1:ncol(tukTxS_0.05temp_DMR_mean_m),rowsep=1:nrow(tukTxS_0.05temp_DMR_mean_m), density.info = "none", trace = "none", scale = "row")
+dev.off()
+
+```
+
+```{r}
+DMR_2wayAOVtuk0.05_bed <- DMRs[which(DMRs$ID %in% pull(DMR_tuk_tempxsal_nC_summ[which(DMR_tuk_tempxsal_nC_summ$adj.p.value < 0.05),],ID)),1:4]
+
+write.table(DMR_2wayAOVtuk0.05_bed, "DMR_2wayAOVTxStuk0.05.bed", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
+
+
+```
+
+
+
 
 **Hypotehsis: there is no effect from temperature, salinity, or their interaction**
 
@@ -233,7 +439,7 @@ dev.off()
 - 8C\_26psu\_NOTinfested 
 
 ```{r}
-#run ANOVA on group name (e.g. 'CTRL_16C_26psu', '8C_32psu', etc.)
+#run 1 way ANOVA on group name (e.g. 'CTRL_16C_26psu', '8C_32psu', etc.)
 DMR_aov = DMRs_STACKED_asin %>% group_by(ID) %>%
 do(meth_aov_models = aov(perc.meth ~ group_name, data =  . ))
 #summarize ANOVA data

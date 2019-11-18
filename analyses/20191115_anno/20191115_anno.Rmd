@@ -1,0 +1,48 @@
+---
+title: "Untitled"
+author: "Shelly Trigg"
+date: "11/15/2019"
+output: html_document
+---
+
+load libraries
+```{r}
+library(ggplot2)
+
+```
+
+read in data 
+```{r}
+#cat *.5x.5x.0.75grp.feat.bed | awk '{print $7,$10,$11,$9,$4,$5}' | tr ' ' '\t' |awk '{a[$1"\t"$2"\t"$3"\t"$4]+=$5; b[$1"\t"$2"\t"$3"\t"$4]+=$6}END{for(i in a)print i"\t"a[i]"\t"b[i]}' > all_uniq_feat_sums.txt
+bkgd <- read.table("/Volumes/web/metacarcinus/Salmo_Calig/analyses/20191113/all_uniq_feat_sums.txt", sep = "\t")
+colnames(bkgd) <- c("chr", "start", "end", "feature", "mCpG", "totCpG")
+mc_bkgd <- bkgd[which(bkgd$mC !=0),1:5]
+
+DMR <- read.table("../MCmax25_asinT_groupStats/DMR_2wayAOVTxStuk0.05.bed", sep = "\t")
+
+#/Users/Shelly/anaconda3/bin/bedtools intersect -a ~/Documents/GitHub/Salmon_sealice/analyses/MCmax25_asinT_groupStats/DMR_2wayAOVTxStuk0.05.bed -b /Volumes/web/metacarcinus/Salmo_Calig/GENOMES/v2/RefSeq/ref_ICSASG_v2_top_level.gff3.gz -wb > ~/Documents/GitHub/Salmon_sealice/analyses/20191115_anno/DMR_2wayAOVTxStuk0.05.gff.bed
+
+DMR_gff <- read.table("DMR_2wayAOVTxStuk0.05.gff.bed", sep = "\t")
+DMR_gff$type <- "DMR"
+DMR_gff_short <- DMR_gff[,c(5,8,9,7,14,4)]
+colnames(DMR_gff_short) <- c("chr", "start", "end", "feature", "type", "count")
+```
+
+format data
+```{r}
+bkgd <- tidyr::gather(bkgd, "type", "count", 5:6)
+
+bkgd_DMR <- rbind(bkgd, DMR_gff_short)
+bkgd_DMR <- bkgd_DMR[which(bkgd_DMR$feature!="match" & bkgd_DMR$feature!="region"),]
+```
+
+```{r}
+jpeg("DMR_2wayAOVTxStuk0.05_feat_props.jpg", width = 1000, height = 400)
+ggplot(bkgd_DMR, aes(x= feature, group = type)) + geom_bar(aes(y = ..prop.., fill = factor(..x..)), stat="count") + geom_text(aes( label = scales::percent(..prop..),y= ..prop.. ), stat= "count", vjust = -.5, size = 2.5) + labs(y = "Percent", fill="feature") + facet_grid(~type) + scale_y_continuous(labels = scales::percent,limits = c(0,0.7)) +  theme_bw() + theme(axis.title.x=element_blank(),axis.text.x=element_blank(),axis.ticks.x=element_blank()) + scale_fill_manual(name="Features", values=RColorBrewer::brewer.pal(12,"Set3"), labels=levels(unique(bkgd_DMR$feature))[which(levels(unique(bkgd_DMR$feature))!="region" & levels(unique(bkgd_DMR$feature)) != "match")]) 
+dev.off()
+
+
+
+
+
+```
