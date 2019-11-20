@@ -103,11 +103,77 @@ dev.off()
 ```
 
 ## Run anova on TRANSFORMED data to assess group differences for each DMR
+**hypothesis: There is no effect from biotic stress**
+```{r}
+#run an 1way ANOVA on 8C 26psu infested vs. 8C 26psu contrl
+df_inf8C <- data.frame(DMRs_STACKED_asin[which(DMRs_STACKED_asin$temp == 8 & DMRs_STACKED_asin$salinity == 26),])
+
+#remove ID if NA = true for both control samples
+inf8C_rm <- rownames(DMR_m[which(is.na(DMR_m[,"methylation_level_CTRL_8C_26psu_1"]) & is.na(DMR_m[,"methylation_level_CTRL_8C_26psu_2"])),])
+
+DMR_1way_aov_8Cinf <- df_inf8C[!(df_inf8C$ID%in% inf8C_rm),] %>% group_by(ID) %>% do(meth_aov_models = aov(perc.meth ~ biotic_stress, data =  . ))
+
+#summarize ANOVA data
+DMR_1way_aov_8Cinf_modelsumm <- glance(DMR_1way_aov_8Cinf, meth_aov_models)
+
+#try 2way temp x biotic stress (only 26psu samples)
+df_inf816C <- data.frame(DMRs_STACKED_asin[which(DMRs_STACKED_asin$salinity == 26),])
+
+#remove ID if NA = true for both control samples
+inf8C_rm <- rownames(DMR_m[which(is.na(DMR_m[,"methylation_level_CTRL_8C_26psu_1"]) & is.na(DMR_m[,"methylation_level_CTRL_8C_26psu_2"])),])
+inf16C_rm <- rownames(DMR_m[which(is.na(DMR_m[,"methylation_level_CTRL_16C_26psu_1"]) & is.na(DMR_m[,"methylation_level_CTRL_16C_26psu_2"])),])
+
+
+
+DMR_2way_aov_816Cinf <- df_inf816C[!(df_inf816C$ID%in% c(inf8C_rm,inf16C_rm)),] %>% group_by(ID) %>% do(meth_aov_models = aov(perc.meth ~ temp*biotic_stress, data =  . ))
+
+DMR_2way_tuk_816Cinf <- df_inf816C[!(df_inf816C$ID%in% c(inf8C_rm,inf16C_rm)),] %>% group_by(ID) %>% do(meth_tuk_models = TukeyHSD(aov(perc.meth ~ biotic_stress*temp, data =  . )))
+
+#summarize ANOVA data
+DMR_2way_aov_816Cinf_modelsumm <- glance(DMR_2way_aov_816Cinf, meth_aov_models)
+
+DMR_2way_tuk_816Cinf_modelsumm <- tidy(DMR_2way_tuk_816Cinf, meth_tuk_models)
+
+#plot
+DMR_inf816C_mean_m <- as.matrix(data.frame(cbind(MeanCTRL8C,MeanCTRL16C,Mean8C26psu,Mean16C26psu )))
+
+DMR_inf816C_mean_m <- DMR_inf816C_mean_m[which(rownames(DMR_inf816C_mean_m) %in% pull(DMR_2way_tuk_816Cinf_modelsumm[which(DMR_2way_tuk_816Cinf_modelsumm$adj.p.value < 0.05),],ID)),]
+
+colnames(DMR_inf816C_mean_m) <- gsub("methylation_level_","",colnames(DMR_inf816C_mean_m))
+
+
+#simplify rownames and reorder columns 
+rownames(tukTxS_0.05sal_DMR_mean_m) <- order(rownames(tukTxS_0.05sal_DMR_mean_m))
+
+#define column (group) colors
+ColSideColors <- cbind(group = c(rep("lightcyan1",1),rep("thistle1",1),rep("cyan",1),rep("magenta",1)))
+
+#define palate for heatmap
+col <- colorRampPalette(brewer.pal(5, "RdBu"))(256)
+
+
+#heatmap with clustered groups and simplified numbers
+heatmap.2(DMR_inf816C_mean_m,margins = c(10,20), cexRow = 1.5, cexCol = 1,ColSideColors = ColSideColors,Colv = NA,col = rev(col), na.color = "darkgray",sepwidth=c(0.025,0.025), sepcolor="darkgray",colsep=1:ncol(DMR_inf816C_mean_m),rowsep=1:nrow(DMR_inf816C_mean_m), density.info = "none", trace = "none", scale = "row")
+
+
+
+
+
+#run an 1way ANOVA on 16C 26psu infested vs. 16C 26psu control
+
+
+
+#find overlapping significant DMRs
+```
+
+
+
+
 
 **hypothesis: There is no effect from biotic stress**
 
 ```{r}
-#run ANOVA testing for infestion effect
+#run ANOVA testing for infestion effect pooling samples
 DMR_1way_aov_inf <- DMRs_STACKED_asin %>% group_by(ID) %>%
 do(meth_aov_models = aov(perc.meth~biotic_stress, data =  . ))
 #summarize ANOVA data
@@ -302,6 +368,40 @@ DMR_2way_aov_tempxsal_nC_modelsumm <- glance(DMR_2way_aov_tempxsal_nC, meth_tuk_
   
 #summarize TukeyHSD results
 DMR_tuk_tempxsal_nC_summ <- tidy(DMR_tuk_tempxsal_nC, meth_tuk_models)
+```
+
+
+plot chromosomes with sig Tuk DMRs
+```{r}
+
+chr_data <- read.table("../../data/chr_name_conversion.txt", sep = "\t", header = FALSE)
+colnames(chr_data) <- c("chr.num","ssa.num","chr")
+
+sig_chr <- rownames(DMR_mean_m[which(rownames(DMR_mean_m) %in% pull(DMR_tuk_tempxsal_nC_summ[which(DMR_tuk_tempxsal_nC_summ$adj.p.value < 0.05),],ID)),])
+sig_chr <- gsub(":.*","",sig_chr)
+sig_chr <- data.frame(table(sig_chr))
+colnames(sig_chr)[1] <- "chr"
+sig_chr <- merge(chr_data, sig_chr, by = "chr", all = TRUE)
+sig_chr[is.na(sig_chr$Freq)] <- 0
+sig_chr$perc <- sig_chr$Freq/52
+sig_chr$type <- "sig"
+ggplot(sig_chr, aes(x= chr)) + geom_bar(aes(y = perc),stat = "identity")
+
+
+
+all_chr_cov <- read.table("../../data/chr_5x0.75grp_cov.txt", sep = " ", header = FALSE)
+colnames(all_chr_cov) <- c("Freq", "chr")
+all_chr_cov <- merge(chr_data,all_chr_cov, by = "chr", all = TRUE)
+all_chr_cov$type <- "bkgd"
+all_chr_cov$perc <- all_chr_cov$Freq/sum(all_chr_cov$Freq)
+
+chr_sig_bkgd <- rbind(sig_chr,all_chr_cov)
+
+#plot chromosome coverage by DMRs vs. background
+ggplot(chr_sig_bkgd, aes(x= ssa.num, group = type, fill = type)) + geom_bar(aes(y = perc),stat = "identity", position = "dodge") + theme(axis.text.x = element_text(size = 10, hjust= 1,angle = 90)) 
+
+
+  
 ```
 
 

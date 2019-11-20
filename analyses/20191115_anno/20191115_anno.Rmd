@@ -13,6 +13,24 @@ library(ggplot2)
 
 read in data 
 ```{r}
+#DMS file: cat /Volumes/web/metacarcinus/Salmo_Calig/analyses/20191030/DMR250bp_MAPQ20_MCmax25_cov5x_rms_results_collapsed.tsv.DMS.bed | sed 's/chr//g' | /Users/Shelly/anaconda3/bin/bedtools intersect -a - -b ~/Documents/GitHub/Salmon_sealice/analyses/MCmax25_asinT_groupStats/DMR_2wayAOVTxStuk0.05.bed > ~/Documents/GitHub/Salmon_sealice/analyses/MCmax25_asinT_groupStats/DMS_2wayAOVTxStuk0.05.bed
+
+#closest:  /Users/Shelly/anaconda3/bin/bedtools sort -i /Volumes/web/metacarcinus/Salmo_Calig/GENOMES/v2/RefSeq/ref_ICSASG_v2_top_level.gff3.gz | /Users/Shelly/anaconda3/bin/bedtools closest -a ~/Documents/GitHub/Salmon_sealice/analyses/MCmax25_asinT_groupStats/DMR_2wayAOVTxStuk0.05.bed -b - -D ref -k 2 > ~/Documents/GitHub/Salmon_sealice/analyses/MCmax25_asinT_groupStats/DMR_2wayAOVTxStuk0.05.closestK2.txt
+
+#awk '{if(($7!="region")&&($7!="transcript")&&($7!="match"))print $0}' ~/Documents/GitHub/Salmon_sealice/analyses/MCmax25_asinT_groupStats/DMR_2wayAOVTxStuk0.05.closestK2.txt | cut -f 1-4,5,7-9,13,14>  ~/Documents/GitHub/Salmon_sealice/analyses/MCmax25_asinT_groupStats/DMR_2wayAOVTxStuk0.05.closestK2noRegionMatchTranscript.txt
+
+DMR_gff_closest <- read.table("../MCmax25_asinT_groupStats/DMR_2wayAOVTxStuk0.05.closestK2noRegionMatchTranscript.txt", sep = "\t")
+colnames(DMR_gff_closest) <- c("DMRchr","DMRstart","DMRend", "num.DMS", "FeatChr", "Feature","FeatStart", "FeatEnd","Info","distance")
+
+
+DMR_gff_closest_overlap <- DMR_gff_closest[which(DMR_gff_closest$distance ==0),]
+
+DMR_gff_closest_overlap_short <- DMR_gff_closest_overlap[,-c(1:3,9,10)]
+DMR_gff_closest_overlap_short <- DMR_gff_closest_overlap_short[,c(2,4,5,3,1)]
+colnames(DMR_gff_closest_overlap_short) <- c("chr", "start", "end", "feature", "count")
+DMR_gff_closest_overlap_short$type <- "DMR"
+
+
 #cat *.5x.5x.0.75grp.feat.bed | awk '{print $7,$10,$11,$9,$4,$5}' | tr ' ' '\t' |awk '{a[$1"\t"$2"\t"$3"\t"$4]+=$5; b[$1"\t"$2"\t"$3"\t"$4]+=$6}END{for(i in a)print i"\t"a[i]"\t"b[i]}' > all_uniq_feat_sums.txt
 bkgd <- read.table("/Volumes/web/metacarcinus/Salmo_Calig/analyses/20191113/all_uniq_feat_sums.txt", sep = "\t")
 colnames(bkgd) <- c("chr", "start", "end", "feature", "mCpG", "totCpG")
@@ -34,15 +52,25 @@ bkgd <- tidyr::gather(bkgd, "type", "count", 5:6)
 
 bkgd_DMR <- rbind(bkgd, DMR_gff_short)
 bkgd_DMR <- bkgd_DMR[which(bkgd_DMR$feature!="match" & bkgd_DMR$feature!="region"),]
+
+bkgd_DMR_close <- rbind(bkgd,DMR_gff_closest_overlap_short)
 ```
 
 ```{r}
-jpeg("DMR_2wayAOVTxStuk0.05_feat_props.jpg", width = 1000, height = 400)
 ggplot(bkgd_DMR, aes(x= feature, group = type)) + geom_bar(aes(y = ..prop.., fill = factor(..x..)), stat="count") + geom_text(aes( label = scales::percent(..prop..),y= ..prop.. ), stat= "count", vjust = -.5, size = 2.5) + labs(y = "Percent", fill="feature") + facet_grid(~type) + scale_y_continuous(labels = scales::percent,limits = c(0,0.7)) +  theme_bw() + theme(axis.title.x=element_blank(),axis.text.x=element_blank(),axis.ticks.x=element_blank()) + scale_fill_manual(name="Features", values=RColorBrewer::brewer.pal(12,"Set3"), labels=levels(unique(bkgd_DMR$feature))[which(levels(unique(bkgd_DMR$feature))!="region" & levels(unique(bkgd_DMR$feature)) != "match")]) 
+
+jpeg("DMR_2wayAOVTxStuk0.05_feat_props.jpg", width = 1000, height = 400)
+ggplot(bkgd_DMR_close[-grep("region|match|transcript",bkgd_DMR_close$feature),], aes(x= feature, group = type)) + geom_bar(aes(y = ..prop.., fill = factor(..x..)), stat="count") + geom_text(aes( label = scales::percent(..prop..),y= ..prop.. ), stat= "count", vjust = -.5, size = 2.5) + labs(y = "Percent", fill="feature") + facet_grid(~type) + scale_y_continuous(labels = scales::percent,limits = c(0,0.7)) +  theme_bw() + theme(axis.title.x=element_blank(),axis.text.x=element_blank(),axis.ticks.x=element_blank()) + scale_fill_manual(name="Features", values=RColorBrewer::brewer.pal(12,"Set3"), labels=levels(unique(bkgd_DMR_close$feature))[which(levels(unique(bkgd_DMR_close$feature))!="region" & levels(unique(bkgd_DMR_close$feature)) != "match" & levels(unique(bkgd_DMR_close$feature)) != "transcript" & levels(unique(bkgd_DMR_close$feature)) != "cDNA_match")]) 
 dev.off()
 
+#plot histgram of DMR distance to feature
+jpeg("DMR_2wayAOVTxStuk0.05_feat_props.jpg", width = 1000, height = 400)
+ggplot(DMR_gff_closest[which(DMR_gff_closest$distance!=0),],aes(x = distance/1000)) + geom_histogram(binwidth = 1) + xlab("distance between DMR and feature (kb)") + ylab("number of features") + scale_x_continuous(breaks = seq(-125,125,by = 5)) + theme_bw()
+```
 
 
-
+```{r}
+# list of uniprot accessions (entrez ids to query uniprot)
+#awk -F"\t" '{if(($10<=2500)&&($10>=-2500))print $0}' ~/Documents/GitHub/Salmon_sealice/analyses/MCmax25_asinT_groupStats/DMR_2wayAOVTxStuk0.05.closestK2noRegionMatchTranscript.txt| awk -F"\t" '{sub(/.*GeneID:/,"GeneID_",$9);sub(/\;.*/,"",$9);sub(/\,.*/,"",$9);print $9}' | sed 's/GeneID_//g' | sort | uniq
 
 ```

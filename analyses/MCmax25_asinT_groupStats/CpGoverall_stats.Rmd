@@ -1,0 +1,77 @@
+---
+title: "Untitled"
+author: "Shelly Trigg"
+date: "11/18/2019"
+output: html_document
+---
+
+
+read in dataa
+```{r}
+CpGs <- read.table("../../data/allc_5x_CpG.txt", header = TRUE, sep = "\t", stringsAsFactors = FALSE)
+
+CpGs0.75x <- read.table("../../data/allc_5x_0.75Xgrp_CpG.txt", header = TRUE, sep = "\t", stringsAsFactors = FALSE)
+
+```
+
+add group info to data frame
+```{r}
+CpGs$group <- gsub("allc_","", CpGs$Sample)
+CpGs$group <- gsub("u_.*","u", CpGs$group)
+CpGs$salinity <- gsub(".*_","", CpGs$group)
+CpGs$salinity <- gsub(".*_","", CpGs$group)
+CpGs$temperature <- gsub("_.*","", CpGs$group)
+
+
+CpGs0.75x$group <- gsub("allc_","", CpGs0.75x$Sample)
+CpGs0.75x$group <- gsub("u_.*","u", CpGs0.75x$group)
+CpGs0.75x$salinity <- gsub(".*_","", CpGs0.75x$group)
+CpGs0.75x$salinity <- gsub(".*_","", CpGs0.75x$group)
+CpGs0.75x$temperature <- gsub("_.*","", CpGs0.75x$group)
+
+CpGs0.75x$Tperc_meth <- asinTransform(CpGs0.75x$perc_meth/100)
+
+```
+
+
+plot CpGs
+```{r}
+grpcol <- cbind(group = c(rep("magenta",1),rep("darkmagenta",1),rep("cyan",1),rep("darkcyan",1),rep("thistle1",1),rep("lightcyan1",1)))
+
+#plot CpGs
+jpeg("5x0.75grpCpG_boxplot.jpg", width = 6, height = 4, units = "in", res = 300)
+ggplot(CpGs0.75x, aes(group,CpG_5x0.75X/1000000))+geom_boxplot(fill = grpcol) + theme_bw() + theme(axis.text.x = element_text(size = 10, hjust= 1,angle = 45)) + ylab("millions of CpGs")
+dev.off()
+
+#plot mCpGs
+jpeg("5x0.75grpmCpG_boxplot.jpg", width = 6, height = 4, units = "in", res = 300)
+ggplot(CpGs0.75x, aes(group,mCpG_5x0.75X/1000000))+geom_boxplot(fill = grpcol) + theme_bw() + theme(axis.text.x = element_text(size = 10, hjust= 1,angle = 45)) + ylab("millions of mCpGs")
+dev.off()
+
+#plot percent methylation
+jpeg("5x0.75grpPercMeth_boxplot.jpg", width = 6, height = 4, units = "in", res = 300)
+ggplot(CpGs, aes(group,perc_meth))+geom_boxplot(fill = grpcol) + theme_bw() + theme(axis.text.x = element_text(size = 10, hjust= 1,angle = 60)) + ylab("CpG % methylation")
+dev.off()
+```
+
+
+run a test for differences between groups
+```{r}
+CpGaov <- aov(mCpG_5x~group, data = CpGs)
+CpGaov2w <- aov(mCpG_5x~temperature*salinity, data = CpGs)
+
+CpGaov <- aov(Tperc_meth~group, data = CpGs0.75x)
+
+
+
+CpGglm <- glm(matrix(c(mCpG_5x0.75X, CpG_5x0.75X), ncol=2) ~ group, family = binomial, data =  CpGs0.75x[-grep("CTRL",CpGs0.75x$group),] )
+
+CpGglm0 <- glm(matrix(c(mCpG_5x0.75X, CpG_5x0.75X), ncol=2) ~ 1, family = binomial, data =  CpGs0.75x[-grep("CTRL",CpGs0.75x$group),] )
+
+p.val<- pchisq(deviance(CpGglm0)-deviance(CpGglm),
+df.residual(CpGglm0)-df.residual(CpGglm),
+lower.tail=FALSE)
+
+
+
+```
