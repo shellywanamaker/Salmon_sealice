@@ -10,7 +10,12 @@ November 17-20, 2019
 Session 7:  Immunology, disease and host-pathogen interactions 
 Wednesday, November 20 16:00 PM - 17:00 PM
 
-**Slide deck:** [Trigg_Tues_1700.pdf](https://github.com/shellytrigg/OysterSeedProject/blob/master/Presentations/Trigg_Tues_1700.pdf)
+**Slide deck:** 
+
+- figshare DOI: [10.6084/m9.figshare.10882775](https://doi.org/10.6084/m9.figshare.10882775)
+- pdf version: [STRIGG_2019_ICISB.pdf](https://github.com/shellytrigg/Salmon_sealice/blob/master/presentations/STRIGG_2019_ICISB.pdf)
+- ppt version: [STRIGG_2019_ICISB.pptx](https://github.com/shellytrigg/Salmon_sealice/blob/master/presentations/STRIGG_2019_ICISB.pptx)
+- draft presentation: [2019_ICISB.pptx](https://github.com/shellytrigg/Salmon_sealice/blob/master/presentations/2019_ICISB.pptx)
 
 **Bio:**  Shelly Trigg is a postdoctoral research associate at the School of Aquatic and Fishery Sciences at the University of Washington in the lab of Steven Roberts. Dr. Trigg received her Ph.D. in Biology at the University of California San Diego in 2018. Her main research interest is the response of aquatic species to environmental change with a focus on molecular networks and physiology.
 
