@@ -368,6 +368,9 @@ DMR_2way_aov_tempxsal_nC_modelsumm <- glance(DMR_2way_aov_tempxsal_nC, meth_tuk_
   
 #summarize TukeyHSD results
 DMR_tuk_tempxsal_nC_summ <- tidy(DMR_tuk_tempxsal_nC, meth_tuk_models)
+
+#write out DMRs sig @ p <= 0.05
+write.csv(DMR_tuk_tempxsal_nC_summ[which(DMR_tuk_tempxsal_nC_summ$adj.p.value <= 0.05),],"DMR_tuk_tempxsal_nC_summ.csv", row.names = FALSE, quote = FALSE )
 ```
 
 

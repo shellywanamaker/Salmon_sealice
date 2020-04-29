@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Session genome="https://gannet.fish.washington.edu/metacarcinus/Salmo_Calig/GENOMES/v2/RefSeq/chr1-29MT/GCF_000233375.1_ICSASG_v2_genomic.fa" hasGeneTrack="false" hasSequenceTrack="true" locus="NC_027310.1:78535768-78539075" path="/Volumes/HHD/Documents/GitHub/Salmon_sealice/analyses/20200424_BmrkCmpr/igv_session.xml" version="8">
+    <Resources>
+        <Resource path="https://gannet.fish.washington.edu/metacarcinus/Salmo_Calig/analyses/20200424/16C_26psu_3_S15_L001_R1_001.SEGuniq.vPE.bed"/>
+        <Resource path="https://gannet.fish.washington.edu/metacarcinus/Salmo_Calig/analyses/20200424/16C_26psu_3_S15_L001_R1_001.SELuniq.vPE.bed"/>
+        <Resource index="https://gannet.fish.washington.edu/metacarcinus/Salmo_Calig/analyses/20200423/TG_SE_Aligned/16C_26psu_3_S15_L001_R1_001_trimmed_bismark_bt2.multiple.deduplicated.sorted.bam.bai" path="https://gannet.fish.washington.edu/metacarcinus/Salmo_Calig/analyses/20200423/TG_SE_Aligned/16C_26psu_3_S15_L001_R1_001_trimmed_bismark_bt2.multiple.deduplicated.sorted.bam"/>
+        <Resource path="https://gannet.fish.washington.edu/metacarcinus/Salmo_Calig/analyses/20200424/16C_26psu_3_S15_L001_R1_001.PEuniq.vSEL.bed"/>
+        <Resource path="https://gannet.fish.washington.edu/metacarcinus/Salmo_Calig/analyses/20200424/16C_26psu_3_S15_L001_R1_001.PEuniq.vSEG.bed"/>
+        <Resource path="https://gannet.fish.washington.edu/metacarcinus/Salmo_Calig/analyses/20200422/TG_PE_Aligned/16C_26psu_3_S15_L001_R1_001_val_1_bismark_bt2_pe.deduplicated.sorted.bam"/>
+        <Resource path="https://gannet.fish.washington.edu/metacarcinus/Salmo_Calig/analyses/20200423/TG_SE_local_aligned/16C_26psu_3_S15_L001_R1_001_trimmed_bismark_bt2.multiple_5x.bedgraph"/>
+        <Resource path="https://gannet.fish.washington.edu/metacarcinus/Salmo_Calig/analyses/20200423/TG_SE_Aligned/16C_26psu_3_S15_L001_R1_001_trimmed_bismark_bt2.multiple_5x.bedgraph"/>
+        <Resource index="https://gannet.fish.washington.edu/metacarcinus/Salmo_Calig/analyses/20200423/TG_SE_local_aligned/16C_26psu_3_S15_L001_R1_001_trimmed_bismark_bt2.multiple.deduplicated.sorted.bam.bai" path="https://gannet.fish.washington.edu/metacarcinus/Salmo_Calig/analyses/20200423/TG_SE_local_aligned/16C_26psu_3_S15_L001_R1_001_trimmed_bismark_bt2.multiple.deduplicated.sorted.bam"/>
+        <Resource path="https://gannet.fish.washington.edu/metacarcinus/Salmo_Calig/analyses/20200422/TG_PE_Aligned/16C_26psu_3_S15_L001_R1_001_val_1_bismark_bt2_pe_5x.bedgraph"/>
+    </Resources>
+    <Panel height="852" name="DataPanel" width="1133">
+        <Track clazz="org.broad.igv.track.SequenceTrack" fontSize="10" id="Reference sequence" name="Reference sequence" visible="true"/>
+        <Track altColor="0,0,178" clazz="org.broad.igv.track.FeatureTrack" color="0,0,178" colorScale="ContinuousColorScale;0.0;896.0;255,255,255;0,0,178" fontSize="10" id="https://gannet.fish.washington.edu/metacarcinus/Salmo_Calig/analyses/20200424/16C_26psu_3_S15_L001_R1_001.PEuniq.vSEG.bed" name="16C_26psu_3_S15_L001_R1_001.PEuniq.vSEG.bed" visible="true"/>
+        <Track altColor="0,0,178" clazz="org.broad.igv.track.FeatureTrack" color="0,0,178" colorScale="ContinuousColorScale;0.0;993.0;255,255,255;0,0,178" fontSize="10" id="https://gannet.fish.washington.edu/metacarcinus/Salmo_Calig/analyses/20200424/16C_26psu_3_S15_L001_R1_001.PEuniq.vSEL.bed" name="16C_26psu_3_S15_L001_R1_001.PEuniq.vSEL.bed" visible="true"/>
+        <Track altColor="0,0,178" clazz="org.broad.igv.track.FeatureTrack" color="0,0,178" colorScale="ContinuousColorScale;0.0;2981.0;255,255,255;0,0,178" fontSize="10" id="https://gannet.fish.washington.edu/metacarcinus/Salmo_Calig/analyses/20200424/16C_26psu_3_S15_L001_R1_001.SEGuniq.vPE.bed" name="16C_26psu_3_S15_L001_R1_001.SEGuniq.vPE.bed" visible="true"/>
+        <Track altColor="0,0,178" clazz="org.broad.igv.track.FeatureTrack" color="0,0,178" colorScale="ContinuousColorScale;0.0;5237.0;255,255,255;0,0,178" fontSize="10" id="https://gannet.fish.washington.edu/metacarcinus/Salmo_Calig/analyses/20200424/16C_26psu_3_S15_L001_R1_001.SELuniq.vPE.bed" name="16C_26psu_3_S15_L001_R1_001.SELuniq.vPE.bed" visible="true"/>
+        <Track autoScale="true" clazz="org.broad.igv.sam.CoverageTrack" color="175,175,175" colorScale="ContinuousColorScale;0.0;10.0;255,255,255;175,175,175" fontSize="10" id="https://gannet.fish.washington.edu/metacarcinus/Salmo_Calig/analyses/20200422/TG_PE_Aligned/16C_26psu_3_S15_L001_R1_001_val_1_bismark_bt2_pe.deduplicated.sorted.bam_coverage" name="16C_26psu_3_S15_L001_R1_001_val_1_bismark_bt2_pe.deduplicated.sorted.bam Coverage" snpThreshold="0.2" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="10.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track clazz="org.broad.igv.sam.SpliceJunctionTrack" fontSize="10" height="60" id="https://gannet.fish.washington.edu/metacarcinus/Salmo_Calig/analyses/20200422/TG_PE_Aligned/16C_26psu_3_S15_L001_R1_001_val_1_bismark_bt2_pe.deduplicated.sorted.bam_junctions" name="16C_26psu_3_S15_L001_R1_001_val_1_bismark_bt2_pe.deduplicated.sorted.bam Junctions" visible="false"/>
+        <Track autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="https://gannet.fish.washington.edu/metacarcinus/Salmo_Calig/analyses/20200422/TG_PE_Aligned/16C_26psu_3_S15_L001_R1_001_val_1_bismark_bt2_pe_5x.bedgraph" name="16C_26psu_3_S15_pe_5x.bedgraph" renderer="BAR_CHART" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="100.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="https://gannet.fish.washington.edu/metacarcinus/Salmo_Calig/analyses/20200423/TG_SE_Aligned/16C_26psu_3_S15_L001_R1_001_trimmed_bismark_bt2.multiple_5x.bedgraph" name="16C_26psu_3_S15_SEG_5x.bedgraph" renderer="BAR_CHART" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="100.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="https://gannet.fish.washington.edu/metacarcinus/Salmo_Calig/analyses/20200423/TG_SE_local_aligned/16C_26psu_3_S15_L001_R1_001_trimmed_bismark_bt2.multiple_5x.bedgraph" name="16C_26psu_3_S15_SEL_5x.bedgraph" renderer="BAR_CHART" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="100.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track clazz="org.broad.igv.sam.AlignmentTrack" displayMode="EXPANDED" experimentType="OTHER" fontSize="10" id="https://gannet.fish.washington.edu/metacarcinus/Salmo_Calig/analyses/20200422/TG_PE_Aligned/16C_26psu_3_S15_L001_R1_001_val_1_bismark_bt2_pe.deduplicated.sorted.bam" name="16C_26psu_3_S15_PE.bam" visible="true">
+            <RenderOptions/>
+        </Track>
+        <Track autoScale="true" clazz="org.broad.igv.sam.CoverageTrack" color="175,175,175" colorScale="ContinuousColorScale;0.0;10.0;255,255,255;175,175,175" fontSize="10" id="https://gannet.fish.washington.edu/metacarcinus/Salmo_Calig/analyses/20200423/TG_SE_Aligned/16C_26psu_3_S15_L001_R1_001_trimmed_bismark_bt2.multiple.deduplicated.sorted.bam_coverage" name="16C_26psu_3_S15_L001_R1_001_trimmed_bismark_bt2.multiple.deduplicated.sorted.bam Coverage" snpThreshold="0.2" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="10.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track clazz="org.broad.igv.sam.SpliceJunctionTrack" fontSize="10" height="60" id="https://gannet.fish.washington.edu/metacarcinus/Salmo_Calig/analyses/20200423/TG_SE_Aligned/16C_26psu_3_S15_L001_R1_001_trimmed_bismark_bt2.multiple.deduplicated.sorted.bam_junctions" name="16C_26psu_3_S15_L001_R1_001_trimmed_bismark_bt2.multiple.deduplicated.sorted.bam Junctions" visible="false"/>
+        <Track clazz="org.broad.igv.sam.AlignmentTrack" displayMode="EXPANDED" experimentType="OTHER" fontSize="10" id="https://gannet.fish.washington.edu/metacarcinus/Salmo_Calig/analyses/20200423/TG_SE_Aligned/16C_26psu_3_S15_L001_R1_001_trimmed_bismark_bt2.multiple.deduplicated.sorted.bam" name="16C_26psu_3_S15_L001_R1_001_trimmed_bismark_bt2.multiple.deduplicated.sorted.bam" visible="true">
+            <RenderOptions/>
+        </Track>
+        <Track autoScale="true" clazz="org.broad.igv.sam.CoverageTrack" color="175,175,175" colorScale="ContinuousColorScale;0.0;10.0;255,255,255;175,175,175" fontSize="10" id="https://gannet.fish.washington.edu/metacarcinus/Salmo_Calig/analyses/20200423/TG_SE_local_aligned/16C_26psu_3_S15_L001_R1_001_trimmed_bismark_bt2.multiple.deduplicated.sorted.bam_coverage" name="16C_26psu_3_S15_L001_R1_001_trimmed_bismark_bt2.multiple.deduplicated.sorted.bam Coverage" snpThreshold="0.2" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="10.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track clazz="org.broad.igv.sam.SpliceJunctionTrack" fontSize="10" height="60" id="https://gannet.fish.washington.edu/metacarcinus/Salmo_Calig/analyses/20200423/TG_SE_local_aligned/16C_26psu_3_S15_L001_R1_001_trimmed_bismark_bt2.multiple.deduplicated.sorted.bam_junctions" name="16C_26psu_3_S15_L001_R1_001_trimmed_bismark_bt2.multiple.deduplicated.sorted.bam Junctions" visible="false"/>
+        <Track clazz="org.broad.igv.sam.AlignmentTrack" displayMode="EXPANDED" experimentType="OTHER" fontSize="10" id="https://gannet.fish.washington.edu/metacarcinus/Salmo_Calig/analyses/20200423/TG_SE_local_aligned/16C_26psu_3_S15_L001_R1_001_trimmed_bismark_bt2.multiple.deduplicated.sorted.bam" name="16C_26psu_3_S15_L001_R1_001_trimmed_bismark_bt2.multiple.deduplicated.sorted.bam" visible="true">
+            <RenderOptions/>
+        </Track>
+    </Panel>
+    <HiddenAttributes>
+        <Attribute name="DATA FILE"/>
+        <Attribute name="DATA TYPE"/>
+        <Attribute name="NAME"/>
+    </HiddenAttributes>
+</Session>
