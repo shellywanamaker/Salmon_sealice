@@ -1,0 +1,113 @@
+---
+title: "Untitled"
+author: "Shelly Trigg"
+date: "4/29/2020"
+output: html_document
+---
+
+load libraries
+```{r}
+library(data.table)
+library(gtools)
+```
+
+read in data 
+```{r}
+#cutadapt stats
+multiqc_a <- fread("https://gannet.fish.washington.edu/metacarcinus/Salmo_Calig/analyses/20200427/TG_PE_Calig_Aligned/multiqc_data/multiqc_cutadapt.txt", header = TRUE, sep = "\t", stringsAsFactors = FALSE)
+
+#bismark
+multiqc_b <- fread("https://gannet.fish.washington.edu/metacarcinus/Salmo_Calig/analyses/20200427/TG_PE_Calig_Aligned/multiqc_data/multiqc_bismark_alignment.txt", header = TRUE, sep = "\t", stringsAsFactors = FALSE)
+
+#bismark meth-extract
+multiqc_c <- fread("https://gannet.fish.washington.edu/metacarcinus/Salmo_Calig/analyses/20200427/TG_PE_Calig_Aligned/multiqc_data/multiqc_bismark_methextract.txt", header = TRUE, sep = "\t", stringsAsFactors = FALSE)
+
+#bismark dedup
+multiqc_d <- fread("https://gannet.fish.washington.edu/metacarcinus/Salmo_Calig/analyses/20200427/TG_PE_Calig_Aligned/multiqc_data/multiqc_bismark_dedup.txt", header = TRUE, sep = "\t", stringsAsFactors = FALSE)
+
+```
+
+
+format multiqc_a
+```{r}
+#remove salmon samples 
+multiqc_a <- multiqc_a[grep("Sealice", multiqc_a$Sample),]
+multiqc_a$lane <- gsub(".*_L","L",multiqc_a$Sample)
+multiqc_a$lane <- gsub("_R.*","",multiqc_a$lane)
+multiqc_a$id <- gsub("_L.*","",multiqc_a$Sample)
+multiqc_a$pair <- gsub(".*R1","R1",multiqc_a$Sample)
+multiqc_a$pair <- gsub(".*R2","R2",multiqc_a$pair)
+multiqc_a$pair <- gsub("_001","",multiqc_a$pair)
+
+#sum lanes 1 and 2
+multiqc_as <- as.data.table(multiqc_a)[, sum(r_processed), by = .(id, pair)]
+#rename columns
+colnames(multiqc_as) <- c("Sample", "pair","total_reads_before_trim" )
+#remove pair column
+multiqc_as <- multiqc_as[,-c("pair")]
+#only keep unique lines
+multiqc_as <- unique(multiqc_as)
+```
+
+
+format multiqc_b
+```{r}
+multiqc_b <- multiqc_b[,c("Sample","total_reads", "aligned_reads", "ambig_reads")]
+#rename total reads column
+colnames(multiqc_b)[2] <- "total_reads_after_trim"
+#rename unique alignments column
+colnames(multiqc_b)[3] <- "uniq_aligned_reads"
+#simplify sample name
+multiqc_b$Sample <- gsub("_R1.*", "", multiqc_b$Sample)
+#calculate % alignment
+multiqc_b$perc_uniq_aligned <- round((multiqc_b$uniq_aligned_reads/multiqc_b$total_reads)*100,2)
+
+multiqc_b$perc_ambig_aligned <- round((multiqc_b$ambig_reads/multiqc_b$total_reads)*100,2)
+
+multiqc_b$perc_no_align <- round(((multiqc_b$total_reads - multiqc_b$ambig_reads - multiqc_b$uniq_aligned_reads)/multiqc_b$total_reads)*100, 2)
+```
+
+format meth extract table
+```{r}
+multiqc_c <- multiqc_c[,c("Sample","percent_cpg_meth", "percent_chg_meth", "percent_chh_meth")]
+multiqc_c$Sample <- gsub("_R1.*", "", multiqc_c$Sample)
+```
+
+format dedup multiqc table
+```{r}
+multiqc_d <- multiqc_d[,-c(2)]
+multiqc_d$Sample <- gsub("_R1.*", "", multiqc_d$Sample)
+```
+
+
+combine pre trim and post align data
+```{r}
+multiqc_asb <- merge(multiqc_as, multiqc_b)
+#create a column for percent reads that trimming removed
+multiqc_asb$perc_reads_trim_removed <- round(((multiqc_asb$total_reads_before_trim - multiqc_asb$total_reads_after_trim)/multiqc_asb$total_reads_before_trim)*100,2)
+#reorder columns
+multiqc_asb <- multiqc_asb[,c(1:2,9,3,4,6,5,7,8)]
+```
+
+merge with dedup data
+```{r}
+multiqc_asbd <- merge(multiqc_asb, multiqc_d, by = "Sample")
+```
+
+merge with meth extract data
+```{r}
+multiqc_asbdc <- merge(multiqc_asbd, multiqc_c, by = "Sample")
+```
+
+transpose data
+```{r}
+multiqc <- t.data.frame(multiqc_asbdc)
+colnames(multiqc) <- multiqc[1,]
+multiqc <- multiqc[-1,]
+```
+
+write out table
+```{r}
+write.csv(multiqc,"sealice_descriptive_stats.csv", quote = FALSE)
+
+```
