@@ -104,6 +104,7 @@ transpose data
 multiqc <- t.data.frame(multiqc_asbdc)
 colnames(multiqc) <- multiqc[1,]
 multiqc <- multiqc[-1,]
+rownames(multiqc) <- gsub("_"," ", rownames(multiqc))
 ```
 
 write out table

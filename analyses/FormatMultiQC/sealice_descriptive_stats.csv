@@ -1,16 +1,16 @@
 ,Sealice_F1_S20,Sealice_F2_S22
-total_reads_before_trim,226181237,163876559
-perc_reads_trim_removed,0.56,0.43
-total_reads_after_trim,224907116,163179589
-uniq_aligned_reads,62174415,34864893
-perc_uniq_aligned,27.64,21.37
-ambig_reads,49967995,31414190
-perc_ambig_aligned,22.22,19.25
-perc_no_align,50.14,59.38
-dedup_reads,39280061,26425601
-dedup_reads_percent,63.18,75.79
-dup_reads,22894354, 8439292
-dup_reads_percent,36.82,24.21
-percent_cpg_meth,1.1,1.0
-percent_chg_meth,1.0,0.8
-percent_chh_meth,1.4,1.5
+total reads before trim,226181237,163876559
+perc reads trim removed,0.56,0.43
+total reads after trim,224907116,163179589
+uniq aligned reads,62174415,34864893
+perc uniq aligned,27.64,21.37
+ambig reads,49967995,31414190
+perc ambig aligned,22.22,19.25
+perc no align,50.14,59.38
+dedup reads,39280061,26425601
+dedup reads percent,63.18,75.79
+dup reads,22894354, 8439292
+dup reads percent,36.82,24.21
+percent cpg meth,1.1,1.0
+percent chg meth,1.0,0.8
+percent chh meth,1.4,1.5
