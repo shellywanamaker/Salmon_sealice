@@ -1,0 +1,28 @@
+---
+title: "Untitled"
+author: "Shelly Trigg"
+date: "6/3/2020"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+
+library(ggplot2)
+data <- read.csv("~/Downloads/cyto_context_perc.csv", stringsAsFactors = F)
+
+stacked_data <- tidyr::gather(data, "coverage","perc_meth", 4:10)
+
+stacked_data$coverage <- gsub("X","", stacked_data$coverage)
+stacked_data$group <- paste(stacked_data$perc_meth_cutoff, stacked_data$Sample, sep = "_")
+
+stacked_data$threshold <- paste(">=",stacked_data$perc_meth_cutoff,"% meth")
+
+ggplot(stacked_data,aes(x = factor(coverage, levels = c("1x", "2x", "5x", "7x", "10x", "15x", "20x")), y = perc_meth ,group = group, color = group)) + geom_point() + facet_wrap(~Context)
+
+jpeg("mC_context_facet_plot.jpg", width = 10, height = 6, units= "in", res = 200)
+ggplot(stacked_data,aes(x = Context, y = perc_meth, color = Sample)) + geom_point() + facet_grid(threshold ~ factor(coverage, levels = c("1x", "2x", "5x", "7x", "10x", "15x", "20x")), scales = "free") + theme_bw() + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + ylab("mC:umC")
+dev.off()
+
+```
