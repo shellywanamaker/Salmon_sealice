@@ -1,0 +1,321 @@
+---
+title: "Untitled"
+author: "Shelly Trigg"
+date: "6/16/2020"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+load libraries
+```{r}
+library(data.table)
+#need to edit fread source code to allow files to download without up-to-date certificate:
+
+#trace("fread", edit = T)
+#add the following lines of code ahead of curl_download
+#hand <- curl::new_handle()
+#curl::handle_setopt(hand, ssl_verifypeer = 0)
+
+#edit curl_download line as follows:
+#curl::curl_download(input, tmpFile, mode = "wb", 
+                  #quiet = !showProgress, handle = hand)
+library(ggplot2)
+library(dplyr)
+```
+
+get descriptive stat (multiqc) data
+```{r}
+PE_bmrk_stats <- fread("https://gannet.fish.washington.edu/metacarcinus/Salmo_Calig/analyses/20200422/TG_PE_Aligned/multiqc_data/multiqc_bismark_alignment.txt")
+
+SEG_bmrk_stats <- fread("https://gannet.fish.washington.edu/metacarcinus/Salmo_Calig/analyses/20200423/TG_SE_Aligned/multiqc_data/multiqc_bismark_alignment.txt")
+
+SEL_bmrk_stats <- fread("https://gannet.fish.washington.edu/metacarcinus/Salmo_Calig/analyses/20200423/TG_SE_local_aligned/multiqc_data_2/multiqc_bismark_alignment.txt")
+
+```
+
+
+format data for plotting
+```{r}
+#add mode column
+PE_bmrk_stats$mode <- "PE"
+SEG_bmrk_stats$mode <- "SE_global"
+SEL_bmrk_stats$mode <- "SE_local"
+
+bmrk_desc_stats <- rbind(PE_bmrk_stats,SEG_bmrk_stats,SEL_bmrk_stats)
+bmrk_desc_stats <- tidyr::gather(bmrk_desc_stats, "category", "reads",c(2,3,8))
+bmrk_desc_stats$category <- gsub("aligned_reads","uniquely_aligned_reads",bmrk_desc_stats$category)
+bmrk_desc_stats$category <- gsub("no_alignments","unaligned_reads",bmrk_desc_stats$category)
+bmrk_desc_stats_align_mean <- bmrk_desc_stats[,19:21] %>% group_by(mode,category) %>% summarise(mean=mean(reads))
+```
+
+
+plot descriptive stat data
+```{r}
+#proportion of reads aligned
+jpeg("figs/proportion_reads_aligned.jpg", width = 8, height = 6, units = "in", res = 300)
+ggplot(bmrk_desc_stats_align_mean) + geom_bar(aes(x = mode, y = mean, fill = factor(category, levels = c("unaligned_reads", "ambig_reads","uniquely_aligned_reads" ))), stat = "identity") + theme_bw() + ylab("number of reads") + labs(fill = "category") + xlab("alignment mode") + ggtitle("proportion of reads aligned") + scale_fill_manual(values = c("red2","gold2","dodgerblue3"))
+dev.off()
+```
+
+
+Examine duplicate reads
+
+get duplicates stat (multiqc) data
+```{r}
+PE_dedup_stats <- fread("https://gannet.fish.washington.edu/metacarcinus/Salmo_Calig/analyses/20200422/TG_PE_Aligned/multiqc_data/multiqc_bismark_dedup.txt")
+
+SEG_dedup_stats <- fread("https://gannet.fish.washington.edu/metacarcinus/Salmo_Calig/analyses/20200423/TG_SE_Aligned/multiqc_data/multiqc_bismark_dedup.txt")
+
+SEL_dedup_stats <- fread("https://gannet.fish.washington.edu/metacarcinus/Salmo_Calig/analyses/20200423/TG_SE_local_aligned/multiqc_data_2/multiqc_bismark_dedup.txt")
+
+```
+
+format data for plotting
+```{r}
+#add mode column
+PE_dedup_stats$mode <- "PE"
+SEG_dedup_stats$mode <- "SE_global"
+SEL_dedup_stats$mode <- "SE_local"
+
+dedup_desc_stats <- rbind(PE_dedup_stats,SEG_dedup_stats,SEL_dedup_stats)
+dedup_desc_stats <- tidyr::gather(dedup_desc_stats, "category", "reads",c(3,5))
+dedup_desc_stats$category <- gsub("dedup_reads","deduplicated_reads",dedup_desc_stats$category)
+dedup_desc_stats$category <- gsub("dup_reads","duplicated_reads",dedup_desc_stats$category)
+dedup_desc_stats_align_mean <- dedup_desc_stats[,5:7] %>% group_by(mode,category) %>% summarise(mean=mean(reads))
+```
+
+plot descriptive stat data
+```{r}
+#proportion of duplicated reads 
+jpeg("figs/proportion_reads_duplicated.jpg", width = 8, height = 6, units = "in", res = 300)
+ggplot(dedup_desc_stats_align_mean) + geom_bar(aes(x = mode, y = mean, fill = category), stat = "identity") + theme_bw() + ylab("number of reads") + labs(fill = "category") + xlab("alignment mode") + ggtitle("proportion of duplicated reads") + scale_fill_manual(values = c("dodgerblue3","red2"))
+dev.off()
+```
+
+Examine %mC in different contexts
+
+get duplicates stat (multiqc) data
+```{r}
+PE_mext_stats <- fread("https://gannet.fish.washington.edu/metacarcinus/Salmo_Calig/analyses/20200422/TG_PE_Aligned/multiqc_data/multiqc_bismark_methextract.txt")
+
+SEG_mext_stats <- fread("https://gannet.fish.washington.edu/metacarcinus/Salmo_Calig/analyses/20200423/TG_SE_Aligned/multiqc_data/multiqc_bismark_methextract.txt")
+
+SEL_mext_stats <- fread("https://gannet.fish.washington.edu/metacarcinus/Salmo_Calig/analyses/20200423/TG_SE_local_aligned/multiqc_data_2/multiqc_bismark_methextract.txt")
+
+```
+
+format data for plotting
+```{r}
+#add mode column
+PE_mext_stats$mode <- "PE"
+SEG_mext_stats$mode <- "SE_global"
+SEL_mext_stats$mode <- "SE_local"
+
+mext_desc_stats <- rbind(PE_mext_stats,SEG_mext_stats,SEL_mext_stats)
+mext_desc_stats <- tidyr::gather(mext_desc_stats, "context", "perc_meth",c(5:7))
+mext_desc_stats$context <- gsub("percent_cpg_meth","CpG",mext_desc_stats$context)
+mext_desc_stats$context <- gsub("percent_chg_meth","CHG",mext_desc_stats$context)
+mext_desc_stats$context <- gsub("percent_chh_meth","CHH",mext_desc_stats$context)
+mext_desc_stats_align_mean <- mext_desc_stats[,9:11] %>% group_by(mode,context) %>% summarise(mean=mean(perc_meth))
+```
+
+
+plot descriptive stat data
+```{r}
+#percent methylation in diff context
+jpeg("figs/perc_meth_diff_context.jpg", width = 8, height = 6, units = "in", res = 300)
+ggplot(mext_desc_stats_align_mean) + geom_bar(aes(x = mode, y = mean), fill = 'lightblue', color = 'black', stat = "identity") + theme_bw() + ylab("methylation (%)") + xlab("alignment mode") + ggtitle("percent methylation in different context") + facet_wrap(~context, scale = "free")
+dev.off()
+```
+
+## Examine CpG loci covered across the genome
+
+This data is downloaded from the 'ConsolidatedAVGs' tab of the following google sheets
+[Bmrk_PEvSE_CmprBeds](https://docs.google.com/spreadsheets/d/1FLuXyZGkBqahjkYv-zAhuyU27I8DK6_Afi1R_IEzkXI/edit?usp=sharing)
+[5x_Bmrk_PEvSE_CmprBeds](https://docs.google.com/spreadsheets/d/1me3IgONFY8PPCt-MpZuRB-R070CoqOcx_bdoLj0LCcI/edit?usp=sharing)
+
+```{r}
+cmpr_loci <- read.csv("Bmrk_PEvSE_CmprBeds - ConsolidatedAVGs.csv", stringsAsFactors = F)
+
+cmpr_loci_5x <- read.csv("5x_Bmrk_PEvSE_CmprBeds - ConsolidatedAVGs.csv", stringsAsFactors = F)
+```
+
+
+format data for plotting
+```{r}
+cmpr_loci_long <- tidyr::gather(cmpr_loci, "mode", "num_loci",2:4)
+cmpr_5x_loci_long <- tidyr::gather(cmpr_loci_5x, "mode", "num_loci",2:4)
+
+
+
+#subset PE v SEG comparison
+PEvSEG_loci <- cmpr_loci_long[which(cmpr_loci_long$mode_1 =="PE" & cmpr_loci_long$mode_2 == "SE_global"),]
+#sub mode names
+PEvSEG_loci$mode <- gsub("mode_1_uniq_loci", "PE_uniq", PEvSEG_loci$mode)
+PEvSEG_loci$mode <- gsub("mode_2_uniq_loci", "SE_global_uniq", PEvSEG_loci$mode)
+PEvSEG_loci$mode <- gsub("common_loci", "common", PEvSEG_loci$mode)
+
+#subset PE v SE local comparison
+PEvSEL_loci <- cmpr_loci_long[which(cmpr_loci_long$mode_1 =="PE" & cmpr_loci_long$mode_2 == "SE_local"),]
+#sub mode names
+PEvSEL_loci$mode <- gsub("mode_1_uniq_loci", "PE_uniq", PEvSEL_loci$mode)
+PEvSEL_loci$mode <- gsub("mode_2_uniq_loci", "SE_local_uniq", PEvSEL_loci$mode)
+PEvSEL_loci$mode <- gsub("common_loci", "common", PEvSEL_loci$mode)
+
+
+#subset SE global v SE local comparison
+SEGvSEL_loci <- cmpr_loci_long[which(cmpr_loci_long$mode_1 =="SE_global" & cmpr_loci_long$mode_2 == "SE_local"),]
+#sub mode names
+SEGvSEL_loci$mode <- gsub("mode_1_uniq_loci", "SE_global_uniq", SEGvSEL_loci$mode)
+SEGvSEL_loci$mode <- gsub("mode_2_uniq_loci", "SE_local_uniq", SEGvSEL_loci$mode)
+SEGvSEL_loci$mode <- gsub("common_loci", "common", SEGvSEL_loci$mode)
+
+
+#NOW DO THE SAME FOR 5x
+
+#subset PE v SEG comparison
+PEvSEG_5x_loci <- cmpr_5x_loci_long[which(cmpr_5x_loci_long$mode_1 =="PE" & cmpr_5x_loci_long$mode_2 == "SE_global"),]
+#sub mode names
+PEvSEG_5x_loci$mode <- gsub("mode_1_uniq_loci", "PE_uniq", PEvSEG_5x_loci$mode)
+PEvSEG_5x_loci$mode <- gsub("mode_2_uniq_loci", "SE_global_uniq", PEvSEG_5x_loci$mode)
+PEvSEG_5x_loci$mode <- gsub("common_loci", "common", PEvSEG_5x_loci$mode)
+
+#subset PE v SE local comparison
+PEvSEL_5x_loci <- cmpr_5x_loci_long[which(cmpr_5x_loci_long$mode_1 =="PE" & cmpr_5x_loci_long$mode_2 == "SE_local"),]
+#sub mode names
+PEvSEL_5x_loci$mode <- gsub("mode_1_uniq_loci", "PE_uniq", PEvSEL_5x_loci$mode)
+PEvSEL_5x_loci$mode <- gsub("mode_2_uniq_loci", "SE_local_uniq", PEvSEL_5x_loci$mode)
+PEvSEL_5x_loci$mode <- gsub("common_loci", "common", PEvSEL_5x_loci$mode)
+
+
+#subset SE global v SE local comparison
+SEGvSEL_5x_loci <- cmpr_5x_loci_long[which(cmpr_5x_loci_long$mode_1 =="SE_global" & cmpr_5x_loci_long$mode_2 == "SE_local"),]
+#sub mode names
+SEGvSEL_5x_loci$mode <- gsub("mode_1_uniq_loci", "SE_global_uniq", SEGvSEL_5x_loci$mode)
+SEGvSEL_5x_loci$mode <- gsub("mode_2_uniq_loci", "SE_local_uniq", SEGvSEL_5x_loci$mode)
+SEGvSEL_5x_loci$mode <- gsub("common_loci", "common", SEGvSEL_5x_loci$mode)
+
+```
+
+plot different comparisons
+```{r}
+#PEvSEglobal
+jpeg("figs/chromXloci_PEvSEglobal.jpg", width = 8, height = 6, units = "in", res = 300)
+ggplot(PEvSEG_loci) + geom_bar(aes(x = Chromosome, y = num_loci, fill = factor(mode, levels = c("SE_global_uniq","common", "PE_uniq"))), stat = "identity") + theme_bw() + ylab("number of CpG loci") + xlab("Chromosome") + ggtitle("CpG loci identified by PE vs SE global mode") + scale_fill_manual(values = c("dodgerblue3", "springgreen3", "gold1")) + labs(fill = "loci") + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+dev.off()
+
+#PEvSElocal
+jpeg("figs/chromXloci_PEvSElocal.jpg", width = 8, height = 6, units = "in", res = 300)
+ggplot(PEvSEL_loci) + geom_bar(aes(x = Chromosome, y = num_loci, fill = factor(mode, levels = c("SE_local_uniq","common", "PE_uniq"))), stat = "identity") + theme_bw() + ylab("number of CpG loci") + xlab("Chromosome") + ggtitle("CpG loci identified by PE vs SE local mode") + scale_fill_manual(values = c("dodgerblue3", "springgreen3", "gold1")) + labs(fill = "loci") + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+dev.off()
+
+
+#SEglobalvSElocal
+jpeg("figs/chromXloci_SEglobalvSElocal.jpg", width = 8, height = 6, units = "in", res = 300)
+ggplot(SEGvSEL_loci) + geom_bar(aes(x = Chromosome, y = num_loci, fill = factor(mode, levels = c("SE_local_uniq","common", "SE_global_uniq"))), stat = "identity") + theme_bw() + ylab("number of CpG loci") + xlab("Chromosome") + ggtitle("CpG loci identified by SE global vs SE local mode") + scale_fill_manual(values = c("dodgerblue3", "springgreen3", "gold1")) + labs(fill = "loci") + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+dev.off()
+
+#NOW DO THE SAME FOR 5x
+#PEvSEglobal
+jpeg("figs/chromXloci5x_PEvSEglobal.jpg", width = 8, height = 6, units = "in", res = 300)
+ggplot(PEvSEG_5x_loci) + geom_bar(aes(x = Chromosome, y = num_loci, fill = factor(mode, levels = c("SE_global_uniq","common", "PE_uniq"))), stat = "identity") + theme_bw() + ylab("number of 5x CpG loci") + xlab("Chromosome") + ggtitle("5x CpG loci identified by PE vs SE global mode") + scale_fill_manual(values = c("dodgerblue3", "springgreen3", "gold1")) + labs(fill = "5x_loci") + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+dev.off()
+
+#PEvSElocal
+jpeg("figs/chromXloci5x_PEvSElocal.jpg", width = 8, height = 6, units = "in", res = 300)
+ggplot(PEvSEL_5x_loci) + geom_bar(aes(x = Chromosome, y = num_loci, fill = factor(mode, levels = c("SE_local_uniq","common", "PE_uniq"))), stat = "identity") + theme_bw() + ylab("number of 5x CpG loci") + xlab("Chromosome") + ggtitle("5x CpG loci identified by PE vs SE local mode") + scale_fill_manual(values = c("dodgerblue3", "springgreen3", "gold1")) + labs(fill = "5x_loci") + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+dev.off()
+
+
+#SEglobalvSElocal
+jpeg("figs/chromXloci5x_SEglobalvSElocal.jpg", width = 8, height = 6, units = "in", res = 300)
+ggplot(SEGvSEL_5x_loci) + geom_bar(aes(x = Chromosome, y = num_loci, fill = factor(mode, levels = c("SE_local_uniq","common", "SE_global_uniq"))), stat = "identity") + theme_bw() + ylab("number of 5x CpG loci") + xlab("Chromosome") + ggtitle("5x CpG loci identified by SE global vs SE local mode") + scale_fill_manual(values = c("dodgerblue3", "springgreen3", "gold1")) + labs(fill = "5x_loci") + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+dev.off()
+```
+
+**Is there a chromosomal bias in loci gained?**
+
+```{r}
+#calculate fold increase in loci from PE to SE global
+cmpr_loci$fold_increase <- (cmpr_loci$mode_2_uniq_loci + cmpr_loci$common_loci)/(cmpr_loci$mode_1_uniq_loci+cmpr_loci$common_loci)
+
+cmpr_loci_5x$fold_increase <- (cmpr_loci_5x$mode_2_uniq_loci + cmpr_loci_5x$common_loci)/(cmpr_loci_5x$mode_1_uniq_loci+cmpr_loci_5x$common_loci)
+
+cmpr_loci_5x$comparison <- paste(cmpr_loci_5x$mode_1,"vs", cmpr_loci_5x$mode_2, sep = "_")
+```
+
+plot fold increase in loci per chromosome x number of chromosomes
+```{r}
+jpeg("figs/loci_fold_increase_per_chrom.jpg", width = 8, height = 6, units = "in", res = 300)
+ggplot(cmpr_loci_5x[which(cmpr_loci_5x$Chromosome!="NC_001960.1"),]) + geom_histogram(aes(fold_increase), fill = "lightblue", color = "black", bins = 10) + facet_wrap(~comparison, scale = "free") + theme_bw() + ylab("number of chromosomes") + xlab("fold increase in 5x CpG loci per chromosome") + ggtitle("CpG loci fold increase per chromosome with different alignment modes")
+dev.off()
+```
+
+SEG_uniq <- read.table("/Volumes/HHD/Downloads/16C_26psu_3_S15_L001_R1_001.SEGuniq.vPE.5x.txt", sep = "\t", header = F)
+
+colnames(SEG_uniq) <- c("Chromosome", "Start", "End", "Perc_meth", "methCpG_reads", "totalCpG_reads")
+
+#plot number of 5x CpG loci x number of reads
+jpeg("figs/SEGuniq_vPE_numReadsXnumCpGloci.jpg", width = 4, height = 3, units = "in", res = 300)
+ggplot(SEG_uniq) + geom_histogram(aes(totalCpG_reads),color = "black", fill = "lightblue") + theme_bw() + ylab("number of 5x CpG loci") + xlab("number of reads")
+```
+
+
+read in data
+```{r}
+PE_stats <- read.table("PE_multiqc_general_stats.txt", sep = "\t", header = T, stringsAsFactors = F)
+
+SEG_stats <- read.table("SEG_multiqc_general_stats.txt", sep = "\t", header = T, stringsAsFactors = F)
+
+SEL_stats <- read.table("SEL_multiqc_general_stats.txt", sep = "\t", header = T, stringsAsFactors = F)
+
+total_reads <- read.table("total_reads.txt", sep = "\t", header = T)
+```
+
+add column to describe alignment parameter used
+```{r}
+PE_stats$method <- "PE"
+SEG_stats$method <- "SEG"
+SEL_stats$method <- "SEL"
+
+
+```
+
+combine stat tables
+```{r}
+stats <- rbind(PE_stats, SEG_stats, SEL_stats)
+
+```
+
+reformat table
+```{r}
+stacked_stats <- tidyr::gather(stats, "stat", "count",2:15)
+
+```
+
+remove NAs
+```{r}
+stacked_stats <- stacked_stats[which(!is.na(stacked_stats$count)),]
+```
+
+clean up stat names
+```{r}
+stacked_stats$stat <- gsub("Bismark_mqc.generalstats.","", stacked_stats$stat)
+stacked_stats$stat <- gsub("Cutadapt_mqc.generalstats.","", stacked_stats$stat)
+stacked_stats$stat <- gsub("FastQC_mqc.generalstats.","", stacked_stats$stat)
+
+#remove val part from sample name
+stacked_stats$Sample <- gsub("_val.*","", stacked_stats$Sample)
+```
+
+plot
+```{r}
+ggplot(stacked_stats[grep("total_sequence", stacked_stats$stat),]) + geom_point(aes(x = method,y=count, color = method, group= Sample), position = "jitter") + facet_wrap(~Sample, scale = "free")
+
+
+ggplot(stacked_stats) + geom_boxplot(aes(x = method,y=count, fill = method,group = method)) + facet_wrap(~stat, scale = "free")
+
+
+ggplot(stacked_stats) + geom_point(aes(x = method,y=count, color = method,group = method), position = "jitter") + facet_wrap(~stat, scale = "free")
+```
