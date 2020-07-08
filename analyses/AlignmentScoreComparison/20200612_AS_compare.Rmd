@@ -1,0 +1,77 @@
+---
+title: "20200612_Salmo_AS_Compare"
+author: "Shelly Trigg"
+date: "6/12/2020"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+load libraries
+```{r}
+library(ggplot2)
+```
+
+
+read in data
+```{r}
+data <- read.csv("20200612_AS_compare.csv", stringsAsFactors = F)
+
+SE_data <- read.csv("20200612_AS_compare_SE.csv", stringsAsFactors = F)
+
+```
+
+remove percent signs and convert to numeric
+```{r}
+data[,3:6] <- apply(data[,3:6] , 2, function(y) as.numeric(gsub("\\%", "", y)))
+
+SE_data[,3:6] <- apply(SE_data[,3:6] , 2, function(y) as.numeric(gsub("\\%", "", y)))
+```
+
+convert to long format
+```{r}
+STACKED_data <- tidyr::gather(data, "Context", "perc", 3:6)
+
+STACKED_SE_data <- tidyr::gather(SE_data, "Context", "perc", 3:6)
+
+#add column for PE or SE
+STACKED_data$mode <- "PE"
+STACKED_SE_data$mode <- "SE"
+
+#combine SE and PE data
+STACKED_PE_SE_data <- rbind(STACKED_data, STACKED_SE_data)
+
+#add column for AS and mode
+STACKED_PE_SE_data$AS_mode <- paste(STACKED_PE_SE_data$AS,STACKED_PE_SE_data$mode,"_")
+
+#make context labels more clear
+STACKED_PE_SE_data$Context <- gsub("perc_mapping","% mapping", STACKED_PE_SE_data$Context)
+
+STACKED_PE_SE_data$Context <- gsub("mC", "% mC", STACKED_PE_SE_data$Context)
+
+
+```
+
+dot plot
+```{r}
+ggplot(STACKED_data, aes(AS, perc, color = Sample)) + geom_point(alpha = 0.5) + facet_wrap(~Context, scale = "free") + theme_bw()
+
+ggplot(STACKED_SE_data, aes(AS, perc, color = Sample)) + geom_point(alpha = 0.5) + facet_wrap(~Context, scale = "free") + theme_bw()
+```
+
+
+box plots
+```{r}
+
+#PE data
+ggplot(STACKED_data, aes(AS, perc, group = AS)) + geom_boxplot() + facet_wrap(~Context, scale = "free") + theme_bw()
+
+#SE data
+ggplot(STACKED_SE_data, aes(AS, perc, group = AS)) + geom_boxplot() + facet_wrap(~Context, scale = "free") + theme_bw()
+
+#PE and SE data plotted together
+jpeg("20200612_ASxmCandMapping.jpg", width = 6, height = 6, units = "in", res = 300)
+ggplot(STACKED_PE_SE_data, aes(AS, perc, group = AS_mode, color = mode)) + geom_boxplot() + facet_wrap(~Context, scale = "free") + theme_bw() + xlab("Alignment score threshold") + ylab("percent")
+dev.off()
+```
+
