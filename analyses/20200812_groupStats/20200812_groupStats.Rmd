@@ -1,0 +1,384 @@
+---
+title: "Untitled"
+author: "Shelly Trigg"
+date: "8/12/2020"
+output: html_document
+---
+
+load libraries
+```{r}
+library(data.table)
+library(gplots)
+library(ggplot2)
+library(dplyr)
+library(broom)
+library(RColorBrewer)
+library(egg)
+library(purrr)
+library(tidyr)
+library(ggpubr)
+```
+
+# Part 1:  Filter methylated regions for regions that have coverage in 75% of samples per group
+
+read in data
+```{r}
+DMR <- data.frame(fread("https://gannet.fish.washington.edu/metacarcinus/Salmo_Calig/analyses/20200811/DMR250bp_MCmax25_cov5x_rms_results_collapsed.tsv"))
+
+```
+
+
+
+loop through table and keep only lines where up to one sample contains NA for % methylation
+```{r}
+## For ambient DMR table
+df <- data.frame() #create empty data frame to bind filtered rows into
+for(i in (1:nrow(DMR))){
+  t16_s26 <- DMR[i,7:10] #define columns from 16C_26psu
+  t16_s32 <- DMR[i,11:14] #define columns from 16C_32psu
+  t8_s26 <- DMR[i,15:18] #define columns from 8C_26psu
+  t8_s32 <- DMR[i,19:22] #define columns from 8C_32psu
+  if(length(which(is.na(t16_s26))) < 2 & length(which(is.na(t16_s32))) < 2 & length(which(is.na(t8_s26))) < 2 & length(which(is.na(t8_s32))) < 2){
+  df <- rbind(df,DMR[i,]) #conditional statement: if less than 2 sameples/category have NA for % methylation bind the whole row to the new dataframe
+  }
+}
+
+```
+
+# Part 2: Run group statistics on regions to find regions that are significantly different among groups
+
+Make a unique ID column 
+```{r}
+colnames(df)[1] <- "chr"
+#for all ambient sample comparison
+df$ID <- paste(df$chr,":",df$start,"-",df$end, sep = "")
+df$ID <- gsub("__.*__.*:",":",df$ID)
+
+```
+
+reformat data for calculating group effect
+```{r}
+#reformat all to long format
+DMR_STACKED <- tidyr::gather(df[,7:ncol(df)], "Sample.ID", "perc.meth",1:16)
+
+#simplify sample ID column
+DMR_STACKED$Sample.ID <- gsub("methylation_level_","", DMR_STACKED$Sample.ID)
+
+#Create treatment column
+DMR_STACKED$Treatment <- gsub("psu_.*","psu", DMR_STACKED$Sample.ID)
+
+#create a temperature column
+DMR_STACKED$Temp <- gsub("C_.*","",DMR_STACKED$Sample.ID)
+DMR_STACKED$Temp <- gsub("CTRL_","", DMR_STACKED$Temp)
+
+#Create a salinity column
+DMR_STACKED$Salinity <- gsub(".*C_","", DMR_STACKED$Sample.ID)
+DMR_STACKED$Salinity <- gsub("psu_.*", "", DMR_STACKED$Salinity)
+
+#Create an infestation status column
+DMR_STACKED$Lice_status <- ifelse(grepl("CTRL",DMR_STACKED$Sample.ID),"no","yes")
+```
+
+plot % meth dist.
+```{r}
+a <- ggplot(DMR_STACKED) + geom_histogram(aes(perc.meth, group = Treatment, color = Treatment,fill = Treatment), bins = 10, position = "identity", alpha = 0.5) + theme_bw() + xlab("fraction methylated CpGs") + theme(text = element_text(size=8),plot.title = element_text(size = 8,face = "bold"),legend.title = element_text(size = 4),legend.text = element_text(size = 4))
+
+```
+
+arc sin sqrt transform the data
+```{r}
+#arcsin sqrt transformation function
+asinTransform <- function(p) { asin(sqrt(p))}
+
+#arcsin transform data 
+
+DMR_STACKED_asin <- DMR_STACKED
+DMR_STACKED_asin$perc.meth <- asinTransform(DMR_STACKED_asin$perc.meth)
+
+```
+
+plot distribution of TRANSFORMED % methylation in all DMRs in all samples
+```{r}
+b <- ggplot(DMR_STACKED_asin) + geom_histogram(aes(perc.meth, group = Treatment, color = Treatment,fill = Treatment), bins = 10, position = "identity", alpha = 0.5) + theme_bw() + xlab("transformed fraction methylated CpGs") + theme(text = element_text(size=8),plot.title = element_text(size = 8,face = "bold"),legend.title = element_text(size = 4),legend.text = element_text(size = 4))
+
+jpeg("DMR_mCpG_histograms.jpg", width = 6, height = 6, units = "in", res = 300)
+ggarrange(a,b, nrow = 2)
+dev.off()
+```
+
+## Run anova on TRANSFORMED data to assess overall group differences
+```{r}
+# hypothesis:  no effect from treatment
+capture.output(summary(aov(perc.meth~Treatment,data = DMR_STACKED_asin)), file = "Results_1way_AOV.txt")
+
+# hypothesis:  no effect from temp, salinity, or their interaction
+capture.output(summary(aov(perc.meth~Temp*Salinity,data = DMR_STACKED_asin)), file = "Results_2way_AOV.txt")
+
+```
+
+## Run anova on TRANSFORMED data to assess group differences for each DMR
+
+**Hypotehsis: there is no effect from temp, sal., or their interaction**
+```{r}
+#
+DMR_2way_aov <- DMR_STACKED_asin[which(DMR_STACKED_asin$Lice_status == "yes"),] %>% group_by(ID) %>%
+do(meth_aov_models = aov(perc.meth~Temp*Salinity, data =  . ))
+#summarize ANOVA data
+#DMR_2way_aov_modelsumm <- glance(DMR_2way_aov, meth_aov_models)
+DMR_2way_aov_modelsumm <- DMR_2way_aov %>% ungroup %>% 
+    pull(meth_aov_models) %>% 
+    map_dfr(tidy, .id = 'grp')
+
+#spread out pvalues
+DMR_2way_aov_modelsumm_wide <- data.frame(tidyr::pivot_wider(DMR_2way_aov_modelsumm, names_from = term, values_from = c("df", "sumsq", "meansq","statistic","p.value"),names_sep = "_" ))
+
+
+
+
+#add group labels back
+
+DMR_2way_aov_modelsumm_wide <- cbind(DMR_2way_aov[,1], DMR_2way_aov_modelsumm_wide[,-c(1)])
+
+
+#create a new column denoting significant effect
+for(i in 1:nrow(DMR_2way_aov_modelsumm_wide)){
+  if(DMR_2way_aov_modelsumm_wide$p.value_Temp[i] < 0.05 &  DMR_2way_aov_modelsumm_wide$p.value_Salinity[i] > 0.05 & DMR_2way_aov_modelsumm_wide$p.value_Temp.Salinity[i] > 0.05){
+    DMR_2way_aov_modelsumm_wide$sig_effect[i] <- "Temp"
+  }
+  if(DMR_2way_aov_modelsumm_wide$p.value_Temp[i] > 0.05 &  DMR_2way_aov_modelsumm_wide$p.value_Salinity[i] < 0.05 & DMR_2way_aov_modelsumm_wide$p.value_Temp.Salinity[i] > 0.05){
+    DMR_2way_aov_modelsumm_wide$sig_effect[i] <- "Sal"
+  }
+  if( DMR_2way_aov_modelsumm_wide$p.value_Temp.Salinity[i] < 0.05){
+    DMR_2way_aov_modelsumm_wide$sig_effect[i] <- "TempxSal"
+  }
+  if(DMR_2way_aov_modelsumm_wide$p.value_Temp[i] < 0.05 &  DMR_2way_aov_modelsumm_wide$p.value_Salinity[i] < 0.05 & DMR_2way_aov_modelsumm_wide$p.value_Temp.Salinity[i] > 0.05){
+    DMR_2way_aov_modelsumm_wide$sig_effect[i] <- "Temp+Sal"
+  }
+  if(DMR_2way_aov_modelsumm_wide$p.value_Temp[i] > 0.05 &  DMR_2way_aov_modelsumm_wide$p.value_Salinity[i] > 0.05 & DMR_2way_aov_modelsumm_wide$p.value_Temp.Salinity[i] > 0.05){
+    DMR_2way_aov_modelsumm_wide$sig_effect[i] <- "none"
+  }
+}
+ 
+
+DMR_2way_aov_modelsumm_wide_0.05 <- DMR_2way_aov_modelsumm_wide[which(DMR_2way_aov_modelsumm_wide$sig_effect!="none"),]
+
+
+#add other model statistics to the table
+DMR_2way_aov_modelsumm_stats <- DMR_2way_aov %>% ungroup %>% 
+    pull(meth_aov_models) %>% 
+    map_dfr(glance, .id = 'grp')
+
+#add group labels back
+DMR_2way_aov_modelsumm_stats <- cbind(DMR_2way_aov[,1], DMR_2way_aov_modelsumm_stats[,-c(1)])
+
+
+#merge other stats with main stats
+DMR_2way_aov_modelsumm_wide_stats <- merge(DMR_2way_aov_modelsumm_stats,DMR_2way_aov_modelsumm_wide, by = "ID")
+
+#add chr, start, and end pos. info to stats table
+
+DMR_2way_aov_modelsumm_wide_stats <- merge(df[,c("chr", "start", "end", "ID")],DMR_2way_aov_modelsumm_wide_stats, by ="ID")
+
+#write out stats table
+write.csv(DMR_2way_aov_modelsumm_wide_stats,"DMR_2way_aov_summ_stats.csv", row.names = F, quote = F)
+
+
+# #run tukey test 
+# DMR_2way_aov_tuk <- DMR_STACKED_asin[which(DMR_STACKED_asin$Lice_status == "yes"),] %>% group_by(ID) %>%
+# do(meth_tuk_models = TukeyHSD(aov(perc.meth~Temp*Salinity, data =  . )))
+# 
+# #DMR_2way_aov_tuk_modelsumm <- tidy(DMR_2way_aov_tuk,meth_tuk_models)
+# 
+# #this works!!!
+# #https://stackoverflow.com/questions/62972843/retreiving-tidy-results-from-regression-by-group-with-broom
+# DMR_2way_aov_tuk_modelsumm <- DMR_2way_aov_tuk %>% ungroup %>% 
+#     pull(meth_tuk_models) %>% 
+#     map_dfr(tidy, .id = 'grp')
+# 
+# DMR_2way_aov_tuk_modelsumm_wide <- data.frame(tidyr::pivot_wider(DMR_2way_aov_tuk_modelsumm, names_from = c("term","comparison"), values_from = c("estimate", "conf.low", "conf.high","adj.p.value"),names_sep = "_" ))
+# 
+# DMR_2way_aov_tuk_model_termsumm_0.05 <- merge(DMR_2way_aov_model_termsumm_0.05,DMR_2way_aov_tuk_modelsumm_wide, by ="ID")
+# 
+# #remove tukey data for DMRs that don't have a significant interaction pvalue
+# 
+# for (i in 1:nrow(DMR_2way_aov_tuk_model_termsumm_0.05)){
+#   if(DMR_2way_aov_tuk_model_termsumm_0.05$p.value_Temp.Salinity[i] > 0.05){
+#     DMR_2way_aov_tuk_model_termsumm_0.05[i,33:50] <- "NA"
+#   }
+# }
+# 
+# DMR_2way_aov_tuk_model_termsumm_0.05 <- merge(df[,c("ID", "chr","start","end")],DMR_2way_aov_tuk_model_termsumm_0.05,by = "ID" )
+# write.csv(DMR_2way_aov_tuk_model_termsumm_0.05,"DMR_2way_aov_tuk_model_summ_0.05.csv", row.names = F, quote = F)
+# 
+# 
+# 
+# 
+# 
+
+
+# #filter tuk results for DMRs with overall model pvalue < = 0.05
+# DMR_2way_aov0.05_tuk_modelsumm <- DMR_2way_aov_tuk_modelsumm[which(DMR_2way_aov_tuk_modelsumm$ID %in% DMR_2way_aov_modelsumm_0.05$ID),]
+# #there are 83 DMRs
+# 
+# #filter for DMRs with Tuk p <= 0.05
+# DMR_2way_aov0.05_tuk_modelsumm_0.05 <- DMR_2way_aov0.05_tuk_modelsumm[which(DMR_2way_aov0.05_tuk_modelsumm$adj.p.value<= 0.05),]
+# #there are 81 DMRs; 2 DMRs did not have adj.p.values <= 0.05
+# 
+# DMR_2way_aov0.05_tuk_modelsumm_0.05$term_comp <- paste(DMR_2way_aov0.05_tuk_modelsumm_0.05$term, DMR_2way_aov0.05_tuk_modelsumm_0.05$comparison, sep = "_")
+# 
+# 
+# DMR_2way_aov_tuk_modelsumm_0.05_spread <- data.frame(tidyr::spread(DMR_2way_aov0.05_tuk_modelsumm_0.05[,c(1,7,8)], "term_comp", "adj.p.value"))
+# 
+# #add column for chr, start and end
+# 
+# DMR_2way_aov_tuk_modelsumm_0.05_spread$chr <- gsub(":.*","",DMR_2way_aov_tuk_modelsumm_0.05_spread$ID)
+# 
+# DMR_2way_aov_tuk_modelsumm_0.05_spread$start <- gsub(".*:","",DMR_2way_aov_tuk_modelsumm_0.05_spread$ID)
+# 
+# DMR_2way_aov_tuk_modelsumm_0.05_spread$start <- gsub("-.*","",DMR_2way_aov_tuk_modelsumm_0.05_spread$start)
+# 
+# DMR_2way_aov_tuk_modelsumm_0.05_spread$end <- gsub(".*-","",DMR_2way_aov_tuk_modelsumm_0.05_spread$ID)
+# 
+# DMR_2way_aov_tuk_modelsumm_0.05_spread_bed <- DMR_2way_aov_tuk_modelsumm_0.05_spread[,c(10:12, 2:9)]
+# 
+# write.table(DMR_2way_aov_tuk_modelsumm_0.05_spread_bed,"DMR_2way_aov_tuk_modelsumm_0.05.csv", row.names = F, quote = F)
+```
+
+
+
+## plot heatmap of 2way aov for pH p.val 0.05 sig DMRs
+```{r}
+#create matrix for heatmap plotting
+aov2way_0.05_DMR_m <- as.matrix(df[,7:22])
+rownames(aov2way_0.05_DMR_m) <- df$ID
+
+#remove extra text from column names
+colnames(aov2way_0.05_DMR_m) <- gsub("methylation_level_","",colnames(aov2way_0.05_DMR_m))
+
+#create matrix for looking at salinity effect
+aov2way_0.05_Sal_DMR_m <- aov2way_0.05_DMR_m[which(rownames(aov2way_0.05_DMR_m) %in% pull(DMR_2way_aov_modelsumm_wide_0.05[which(DMR_2way_aov_modelsumm_wide_0.05$sig_effect == "Sal"),],ID)),]
+
+jpeg("DMR_percMeth_Sal_heatmap.jpg", width = 8, height = 10, units = "in", res = 300)
+heatmap.2(aov2way_0.05_Sal_DMR_m,margins = c(10,20), cexRow = 0.75,cexCol = 1.25,distfun = function(x) as.dist(1 - cor(t(x), use = "pa")), hclustfun = function(x) hclust(x,method = 'average'),dendrogram = "row",Colv=NA, col= rev(colorRampPalette(brewer.pal(10, "RdYlBu"))(256)),na.color = "black", density.info = "none", trace = "none", scale = "row",sepwidth=c(0.01,0.01),sepcolor="white",colsep=1:ncol(aov2way_0.05_Sal_DMR_m),rowsep=1:nrow(aov2way_0.05_Sal_DMR_m),lhei = c(1,7), ColSideColors = c(rep("magenta4",4), rep("magenta2",4), rep("cyan4",4), rep("cyan2",4)))
+dev.off()
+
+#create matrix for looking at temp effect
+aov2way_0.05_temp_DMR_m <-  aov2way_0.05_DMR_m[which(rownames(aov2way_0.05_DMR_m) %in% pull(DMR_2way_aov_modelsumm_wide_0.05[which(DMR_2way_aov_modelsumm_wide_0.05$sig_effect == "Temp"),],ID)),]
+
+jpeg("DMR_percMeth_Temp_heatmap.jpg", width = 8, height = 10, units = "in", res = 300)
+heatmap.2(aov2way_0.05_temp_DMR_m, margins = c(15,20),cexRow = 1,cexCol = 1.25,distfun = function(x) as.dist(1 - cor(t(x), use = "pa")), hclustfun = function(x) hclust(x,method = 'average'),dendrogram = "row",Colv=NA, col= rev(colorRampPalette(brewer.pal(10, "RdYlBu"))(256)),na.color = "black", density.info = "none", trace = "none", scale = "row",sepwidth=c(0.01,0.01),sepcolor="white",colsep=1:ncol(aov2way_0.05_temp_DMR_m),rowsep=1:nrow(aov2way_0.05_temp_DMR_m),lhei = c(1,7),ColSideColors = c(rep("magenta4",4), rep("magenta2",4), rep("cyan4",4), rep("cyan2",4)))
+dev.off()
+
+#create matrix for looking at interaction effect
+aov2way_0.05_tempxsal_DMR_m <-  aov2way_0.05_DMR_m[which(rownames(aov2way_0.05_DMR_m) %in% pull(DMR_2way_aov_modelsumm_wide_0.05[which(DMR_2way_aov_modelsumm_wide_0.05$sig_effect== "TempxSal"),],ID)),]
+
+jpeg("DMR_percMethTempXSal_heatmap.jpg", width = 8, height = 10, units = "in", res = 300)
+heatmap.2(aov2way_0.05_tempxsal_DMR_m,margins = c(15,20), cexRow = 1,cexCol = 1.25,distfun = function(x) as.dist(1 - cor(t(x), use = "pa")), hclustfun = function(x) hclust(x,method = 'average'),dendrogram = "row",Colv=NA, col= rev(colorRampPalette(brewer.pal(10, "RdYlBu"))(256)),na.color = "black", density.info = "none", trace = "none", scale = "row",sepwidth=c(0.01,0.01),sepcolor="white",colsep=1:ncol(aov2way_0.05_tempxsal_DMR_m),rowsep=1:nrow(aov2way_0.05_tempxsal_DMR_m),lhei = c(1,7),ColSideColors = c(rep("magenta4",4), rep("magenta2",4), rep("cyan4",4), rep("cyan2",4)))
+dev.off()
+
+
+#plot DMRs with additive effect
+
+#create matrix for looking at interaction effect
+aov2way_0.05_tempANDsal_DMR_m <-  aov2way_0.05_DMR_m[which(rownames(aov2way_0.05_DMR_m) %in% pull(DMR_2way_aov_modelsumm_wide_0.05[which(DMR_2way_aov_modelsumm_wide_0.05$sig_effect== "Temp+Sal"),],ID)),]
+
+jpeg("DMR_percMethTempANDSal_heatmap.jpg", width = 12, height = 10, units = "in", res = 300)
+heatmap.2(aov2way_0.05_tempANDsal_DMR_m, margins = c(15,20),cexRow = 1.25, cexCol = 1.5,distfun = function(x) as.dist(1 - cor(t(x), use = "pa")), hclustfun = function(x) hclust(x,method = 'average'),dendrogram = "row",Colv=NA, col= rev(colorRampPalette(brewer.pal(10, "RdYlBu"))(256)),na.color = "black", density.info = "none", trace = "none", scale = "row",sepwidth=c(0.01,0.01),sepcolor="white",colsep=1:ncol(aov2way_0.05_tempANDsal_DMR_m),rowsep=1:nrow(aov2way_0.05_tempANDsal_DMR_m),lhei = c(1,7),ColSideColors = c(rep("magenta4",4), rep("magenta2",4), rep("cyan4",4), rep("cyan2",4)))
+dev.off()
+
+# #create multipanel plot of heatmaps
+# 
+# library(gridGraphics)
+# library(grid)
+# 
+# grab_grob <- function(){
+#   grid.echo()
+#   grid.grab()
+# }
+# 
+# arr <- list(aov2way_0.05_temp_DMR_m,aov2way_0.05_Sal_DMR_m, aov2way_0.05_tempxsal_DMR_m, aov2way_0.05_tempANDsal_DMR_m)
+# 
+# gl <- lapply(1:4, function(i){
+#   heatmap.2(arr[[i]], margins = c(10,20), cexRow = 0.2,distfun = function(x) as.dist(1 - cor(t(x), use = "pa")), hclustfun = function(x) hclust(x,method = 'average'),Colv=NA, col= rev(colorRampPalette(brewer.pal(10, "RdYlBu"))(256)),na.color = "black", density.info = "none", trace = "none", dendrogram = "row", scale = "row",sepwidth=c(0.01,0.01),sepcolor="white",colsep=1:ncol(arr[[i]]),rowsep=1:nrow(arr[[i]])          )
+#   grab_grob()
+# })
+# 
+# grid.newpage()
+# library(gridExtra)
+# jpeg("DMR_sig0.05_heatmaps.jpg", width = 12, height = 6, units = "in", res = 300)
+# grid.arrange(grobs=gl, ncol=4, clip=TRUE)
+# dev.off()
+
+```
+
+###Visualize group means
+```{r}
+#calculate group means
+MeanT16S26 <- rowMeans(aov2way_0.05_DMR_m[,1:4], na.rm = TRUE)
+MeanT16S32 <- rowMeans(aov2way_0.05_DMR_m[,5:8], na.rm = TRUE)
+MeanT8S26 <- rowMeans(aov2way_0.05_DMR_m[,9:12], na.rm = TRUE)
+MeanT8S32 <- rowMeans(aov2way_0.05_DMR_m[,13:16], na.rm = TRUE)
+
+
+#bind all group means together
+aov2way_0.05_DMR_mean_m <- as.matrix(data.frame(cbind(MeanT16S26, MeanT16S32, MeanT8S26, MeanT8S32)))
+
+#plot for day10 group mean comparison
+colnames(aov2way_0.05_DMR_mean_m) <- c("16C_26psu", "16C_32psu", "8C_26psu", "8C_32psu")
+
+
+#plot DMRs that show temerature effect @ p < 0.05
+aov2way_0.05_temp_DMR_mean_m <- aov2way_0.05_DMR_mean_m[which(rownames(aov2way_0.05_DMR_mean_m) %in% pull(DMR_2way_aov_modelsumm_wide_0.05[which(DMR_2way_aov_modelsumm_wide_0.05$sig_effect=="Temp"),],ID)),]
+
+jpeg("DMR_meanMeth_Temp_heatmap.jpg", width = 8, height = 10,units = "in", res = 300 )
+heatmap.2(aov2way_0.05_temp_DMR_mean_m,margins = c(7,20), cexCol = 1,cexRow = 0.8,distfun = function(x) as.dist(1 - cor(t(x), use = "pa")), hclustfun = function(x) hclust(x,method = 'average'),dendrogram = "row",Colv=NA, col= rev(colorRampPalette(brewer.pal(10, "RdYlBu"))(256)),na.color = "black", density.info = "none", trace = "none", scale = "row",sepwidth=c(0.01,0.01),sepcolor="white",colsep=1:ncol(aov2way_0.05_temp_DMR_mean_m),rowsep=1:nrow(aov2way_0.05_temp_DMR_mean_m),lhei = c(1,7))
+dev.off()
+
+#plot DMR means that show salinity effect @ p < 0.05
+aov2way_0.05_sal_DMR_mean_m <- aov2way_0.05_DMR_mean_m[which(rownames(aov2way_0.05_DMR_mean_m) %in% pull(DMR_2way_aov_modelsumm_wide_0.05[which(DMR_2way_aov_modelsumm_wide_0.05$sig_effect =="Sal"),],ID)),]
+
+jpeg("DMR_meanMeth_Sal_heatmap.jpg", width = 8, height = 10,units = "in", res = 300 )
+heatmap.2(aov2way_0.05_sal_DMR_mean_m,margins = c(7,20), cexCol = 1, cexRow = 0.75, distfun = function(x) as.dist(1 - cor(t(x), use = "pa")), hclustfun = function(x) hclust(x,method = 'average'),dendrogram = "row",Colv=NA, col= rev(colorRampPalette(brewer.pal(10, "RdYlBu"))(256)),na.color = "black", density.info = "none", trace = "none", scale = "row",sepwidth=c(0.01,0.01),sepcolor="white",colsep=1:ncol(aov2way_0.05_sal_DMR_mean_m),rowsep=1:nrow(aov2way_0.05_sal_DMR_mean_m),lhei = c(1,7))
+dev.off()
+
+#plot DMRs that show interaction effect @ p < 0.05
+aov2way_0.05_salxtemp_DMR_mean_m <- aov2way_0.05_DMR_mean_m[which(rownames(aov2way_0.05_DMR_mean_m) %in% pull(DMR_2way_aov_modelsumm_wide_0.05[which(DMR_2way_aov_modelsumm_wide_0.05$sig_effect=="TempxSal"),],ID)),]
+
+jpeg("DMR_meanMeth_TempxSal_heatmap.jpg", width = 8, height = 10,units = "in", res = 300)
+heatmap.2(aov2way_0.05_salxtemp_DMR_mean_m,margins = c(7,20), cexCol = 1,cexRow = 1, distfun = function(x) as.dist(1 - cor(t(x), use = "pa")), hclustfun = function(x) hclust(x,method = 'average'),dendrogram = "row",Colv=NA, col= rev(colorRampPalette(brewer.pal(10, "RdYlBu"))(256)),na.color = "black", density.info = "none", trace = "none", scale = "row",sepwidth=c(0.01,0.01),sepcolor="white",colsep=1:ncol(aov2way_0.05_salxtemp_DMR_mean_m),rowsep=1:nrow(aov2way_0.05_salxtemp_DMR_mean_m),lhei = c(1,7))
+dev.off()
+
+#plot DMRs that show additive effect @ p < 0.05
+aov2way_0.05_salANDtemp_DMR_mean_m <- aov2way_0.05_DMR_mean_m[which(rownames(aov2way_0.05_DMR_mean_m) %in% pull(DMR_2way_aov_modelsumm_wide_0.05[which(DMR_2way_aov_modelsumm_wide_0.05$sig_effect=="Temp+Sal"),],ID)),]
+
+jpeg("DMR_meanMeth_TempANDSal_heatmap.jpg", width = 8, height = 10,units = "in", res = 300)
+heatmap.2(aov2way_0.05_salANDtemp_DMR_mean_m,margins = c(7,15), cexCol = 1, cexRow = 1,distfun = function(x) as.dist(1 - cor(t(x), use = "pa")), hclustfun = function(x) hclust(x,method = 'average'),dendrogram = "row",Colv=NA, col= rev(colorRampPalette(brewer.pal(10, "RdYlBu"))(256)),na.color = "black", density.info = "none", trace = "none", scale = "row",sepwidth=c(0.01,0.01),sepcolor="white",colsep=1:ncol(aov2way_0.05_salANDtemp_DMR_mean_m),rowsep=1:nrow(aov2way_0.05_salANDtemp_DMR_mean_m),lhei = c(1,7))
+dev.off()
+
+```
+
+
+
+#Create dfs for exclusively salinity effect, temp effect, and interaction effect
+```{r}
+#based on Tukey's HSD p. values
+DMR_2way_aov_0.05_temp <- DMR_2way_aov_tuk_model_termsumm_0.05[which(DMR_2way_aov_tuk_model_termsumm_0.05$adj.p.value_Temp_8.16 < 0.05 & DMR_2way_aov_tuk_model_termsumm_0.05$adj.p.value_Salinity_32.26 > 0.05 & DMR_2way_aov_tuk_model_termsumm_0.05$adj.p.value_Temp.Salinity_8.26.16.26 > 0.05 & DMR_2way_aov_tuk_model_termsumm_0.05$adj.p.value_Temp.Salinity_16.32.16.26 > 0.05 & DMR_2way_aov_tuk_model_termsumm_0.05$adj.p.value_Temp.Salinity_8.32.16.26 > 0.05 & DMR_2way_aov_tuk_model_termsumm_0.05$adj.p.value_Temp.Salinity_16.32.8.26 > 0.05 & DMR_2way_aov_tuk_model_termsumm_0.05$adj.p.value_Temp.Salinity_8.32.8.26 > 0.05 & DMR_2way_aov_tuk_model_termsumm_0.05$adj.p.value_Temp.Salinity_8.32.16.32 > 0.05),]
+# there is only one DMR with a significant temperature term and no significant interaction term
+
+DMR_2way_aov_0.05_sal <- DMR_2way_aov_tuk_model_termsumm_0.05[which(DMR_2way_aov_tuk_model_termsumm_0.05$adj.p.value_Salinity_32.26 < 0.05 & DMR_2way_aov_tuk_model_termsumm_0.05$adj.p.value_Temp_8.16 > 0.05 & DMR_2way_aov_tuk_model_termsumm_0.05$adj.p.value_Temp.Salinity_8.26.16.26 > 0.05 & DMR_2way_aov_tuk_model_termsumm_0.05$adj.p.value_Temp.Salinity_16.32.16.26 > 0.05 & DMR_2way_aov_tuk_model_termsumm_0.05$adj.p.value_Temp.Salinity_8.32.16.26 > 0.05 & DMR_2way_aov_tuk_model_termsumm_0.05$adj.p.value_Temp.Salinity_16.32.8.26 > 0.05 & DMR_2way_aov_tuk_model_termsumm_0.05$adj.p.value_Temp.Salinity_8.32.8.26 > 0.05 & DMR_2way_aov_tuk_model_termsumm_0.05$adj.p.value_Temp.Salinity_8.32.16.32 > 0.05),]
+# there are only 2 DMR with a significant salinity term and no significant interaction term
+DMR_2way_aov_0.05_salxtemp <-  DMR_2way_aov_tuk_model_termsumm_0.05[which(DMR_2way_aov_tuk_model_termsumm_0.05$adj.p.value_Salinity_32.26 > 0.05 & DMR_2way_aov_tuk_model_termsumm_0.05$adj.p.value_Temp_8.16 > 0.05),]  
+#there are 16 DMRs that have significant interaction terms and not significant salinity or temperature terms
+
+# based on ANOVA effect p.values
+
+DMR_2way_aov_0.05_temp <- DMR_2way_aov_tuk_model_termsumm_0.05[which(DMR_2way_aov_tuk_model_termsumm_0.05$p.value_Temp < 0.05 & DMR_2way_aov_tuk_model_termsumm_0.05$p.value_Salinity > 0.05 & DMR_2way_aov_tuk_model_termsumm_0.05$p.value_Temp.Salinity > 0.05),]
+# there are 11 DMRs with a significant temperature term and no significant interaction term
+
+DMR_2way_aov_0.05_sal <- DMR_2way_aov_tuk_model_termsumm_0.05[which(DMR_2way_aov_tuk_model_termsumm_0.05$p.value_Temp > 0.05 & DMR_2way_aov_tuk_model_termsumm_0.05$p.value_Salinity < 0.05 & DMR_2way_aov_tuk_model_termsumm_0.05$p.value_Temp.Salinity > 0.05),]
+# there are 33 DMRs with a significant salinity term and no significant interaction term
+
+DMR_2way_aov_0.05_salxtemp <- DMR_2way_aov_tuk_model_termsumm_0.05[which(DMR_2way_aov_tuk_model_termsumm_0.05$p.value_Temp > 0.05 & DMR_2way_aov_tuk_model_termsumm_0.05$p.value_Salinity > 0.05 & DMR_2way_aov_tuk_model_termsumm_0.05$p.value_Temp.Salinity < 0.05),]
+# there are 15 DMRs with a significant interaction term and no significant terms
+
+```
