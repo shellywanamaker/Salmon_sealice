@@ -359,11 +359,8 @@ dev.off()
 
 
 
-#Create dfs for exclusively salinity effect, temp effect, and interaction effect
+#Create bed files for each significant effect
 ```{r}
-#based on Tukey's HSD p. values
-DMR_2way_aov_0.05_temp <- DMR_2way_aov_tuk_model_termsumm_0.05[which(DMR_2way_aov_tuk_model_termsumm_0.05$adj.p.value_Temp_8.16 < 0.05 & DMR_2way_aov_tuk_model_termsumm_0.05$adj.p.value_Salinity_32.26 > 0.05 & DMR_2way_aov_tuk_model_termsumm_0.05$adj.p.value_Temp.Salinity_8.26.16.26 > 0.05 & DMR_2way_aov_tuk_model_termsumm_0.05$adj.p.value_Temp.Salinity_16.32.16.26 > 0.05 & DMR_2way_aov_tuk_model_termsumm_0.05$adj.p.value_Temp.Salinity_8.32.16.26 > 0.05 & DMR_2way_aov_tuk_model_termsumm_0.05$adj.p.value_Temp.Salinity_16.32.8.26 > 0.05 & DMR_2way_aov_tuk_model_termsumm_0.05$adj.p.value_Temp.Salinity_8.32.8.26 > 0.05 & DMR_2way_aov_tuk_model_termsumm_0.05$adj.p.value_Temp.Salinity_8.32.16.32 > 0.05),]
-# there is only one DMR with a significant temperature term and no significant interaction term
 
 DMR_2way_aov_0.05_sal <- DMR_2way_aov_tuk_model_termsumm_0.05[which(DMR_2way_aov_tuk_model_termsumm_0.05$adj.p.value_Salinity_32.26 < 0.05 & DMR_2way_aov_tuk_model_termsumm_0.05$adj.p.value_Temp_8.16 > 0.05 & DMR_2way_aov_tuk_model_termsumm_0.05$adj.p.value_Temp.Salinity_8.26.16.26 > 0.05 & DMR_2way_aov_tuk_model_termsumm_0.05$adj.p.value_Temp.Salinity_16.32.16.26 > 0.05 & DMR_2way_aov_tuk_model_termsumm_0.05$adj.p.value_Temp.Salinity_8.32.16.26 > 0.05 & DMR_2way_aov_tuk_model_termsumm_0.05$adj.p.value_Temp.Salinity_16.32.8.26 > 0.05 & DMR_2way_aov_tuk_model_termsumm_0.05$adj.p.value_Temp.Salinity_8.32.8.26 > 0.05 & DMR_2way_aov_tuk_model_termsumm_0.05$adj.p.value_Temp.Salinity_8.32.16.32 > 0.05),]
 # there are only 2 DMR with a significant salinity term and no significant interaction term
