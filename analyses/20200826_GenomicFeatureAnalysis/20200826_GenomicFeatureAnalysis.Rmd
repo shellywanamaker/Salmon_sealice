@@ -131,25 +131,30 @@ for(i in 1:length(unique(feat_summ$feature))){ #loop through each feature
   print(ct_b)
   print(ct_c)
   print(ct_d)
-  x <-  data.frame(broom::tidy(prop.test(ct_a, correct = FALSE))) # create data frame storing the Chi sq stats results
+  x <-  cbind(numBKGDReg,numsalDMRreg,totBKGD,totsalDMR,data.frame(broom::tidy(prop.test(ct_a, correct = FALSE)))) # create data frame storing the Chi sq stats results
   x$feature <- as.character(feat_summ[which(feat_summ$comparison=="Sal"),"feature"][i]) # add feature name to chi sq df
   x$comparison <- "Sal"
-  y <-  data.frame(broom::tidy(prop.test(ct_b, correct = FALSE))) # create data frame storing the Chi sq stats results
+  colnames(x)[1:4] <- c("numBKGDinFeature", "numDMRinFeature", "numBKGDNOTinFeature", "numDMRNOTinFeature")
+  y <-  cbind(numBKGDReg,numtempDMRreg,totBKGD,tottempDMR,data.frame(broom::tidy(prop.test(ct_b, correct = FALSE)))) # create data frame storing the Chi sq stats results
   y$feature <- as.character(feat_summ[which(feat_summ$comparison=="Temp"),"feature"][i]) # add feature name to chi sq df
   y$comparison <- "Temp"
-  z <-  data.frame(broom::tidy(prop.test(ct_c, correct = FALSE))) # create data frame storing the Chi sq stats results
+  colnames(y)[1:4] <- c("numBKGDinFeature", "numDMRinFeature", "numBKGDNOTinFeature", "numDMRNOTinFeature")
+  z <-  cbind(numBKGDReg,numtempxsalDMRreg,totBKGD,tottempxsalDMR,data.frame(broom::tidy(prop.test(ct_c, correct = FALSE)))) # create data frame storing the Chi sq stats results
   z$feature <- as.character(feat_summ[which(feat_summ$comparison=="TempxSal"),"feature"][i]) # add feature name to chi sq df
   z$comparison <- "TempxSal"
-  w <-  data.frame(broom::tidy(prop.test(ct_d, correct = FALSE))) # create data frame storing the Chi sq stats results
+  colnames(z)[1:4] <- c("numBKGDinFeature", "numDMRinFeature", "numBKGDNOTinFeature", "numDMRNOTinFeature")
+  w <-  cbind(numBKGDReg,numtempANDsalDMRreg,totBKGD,tottempANDsalDMR,data.frame(broom::tidy(prop.test(ct_d, correct = FALSE)))) # create data frame storing the Chi sq stats results
   w$feature <- as.character(feat_summ[which(feat_summ$comparison=="Temp+Sal"),"feature"][i]) # add feature name to chi sq df
   w$comparison <- "Temp+Sal"
+  colnames(w)[1:4] <- c("numBKGDinFeature", "numDMRinFeature", "numBKGDNOTinFeature", "numDMRNOTinFeature")
   chi_table <- rbind(chi_table,x,y,z,w) #add chi sq stats to master table
+  
 }
 
 #adjust chi pvalues
 chi_table$p.adj <- p.adjust(chi_table$p.value, method = "fdr")
 
-
+write.csv(chi_table, "chi_sq_bin_feats.csv", row.names = F, quote = F)
 ```
 
 
