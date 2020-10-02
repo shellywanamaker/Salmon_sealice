@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Session genome="https://gannet.fish.washington.edu/metacarcinus/Salmo_Calig/GENOMES/v2/RefSeq/chr1-29MT/GCF_000233375.1_ICSASG_v2_genomic.fa" hasGeneTrack="false" hasSequenceTrack="true" locus="NC_027300.1:3347170-3359954" path="/Volumes/HHD/Documents/GitHub/Salmon_sealice/analyses/20200930_igv_session.xml" version="8">
+    <Resources>
+        <Resource path="https://gannet.fish.washington.edu/metacarcinus/Salmo_Calig/GENOMES/v2/RefSeq/chr1-29MT/GCF_000233375.1_ICSASG_v2_mRNA.bed"/>
+        <Resource path="https://gannet.fish.washington.edu/metacarcinus/Salmo_Calig/GENOMES/v2/RefSeq/chr1-29MT/GCF_000233375.1_ICSASG_v2_CDS.bed"/>
+        <Resource path="https://gannet.fish.washington.edu/metacarcinus/Salmo_Calig/GENOMES/v2/RefSeq/chr1-29MT/GCF_000233375.1_ICSASG_v2_promoter.gff"/>
+        <Resource path="https://gannet.fish.washington.edu/metacarcinus/Salmo_Calig/GENOMES/v2/RefSeq/chr1-29MT/GCF_000233375.1_ICSASG_v2_intron.bed"/>
+        <Resource path="https://gannet.fish.washington.edu/metacarcinus/Salmo_Calig/GENOMES/v2/RefSeq/chr1-29MT/GCF_000233375.1_ICSASG_v2_exon.bed"/>
+        <Resource path="https://gannet.fish.washington.edu/metacarcinus/Salmo_Calig/GENOMES/v2/RefSeq/chr1-29MT/GCF_000233375.1_ICSASG_v2_genomic_last_exon.gff"/>
+        <Resource path="https://gannet.fish.washington.edu/metacarcinus/Salmo_Calig/GENOMES/v2/RefSeq/chr1-29MT/GCF_000233375.1_ICSASG_v2_genomic_first_exon.gff"/>
+        <Resource path="https://gannet.fish.washington.edu/metacarcinus/Salmo_Calig/GENOMES/v2/RefSeq/chr1-29MT/GCF_000233375.1_ICSASG_v2_gene.bed"/>
+    </Resources>
+    <Panel height="554" name="DataPanel" width="1133">
+        <Track clazz="org.broad.igv.track.SequenceTrack" fontSize="10" id="Reference sequence" name="Reference sequence" visible="true"/>
+        <Track clazz="org.broad.igv.track.FeatureTrack" color="0,0,178" fontSize="8" id="https://gannet.fish.washington.edu/metacarcinus/Salmo_Calig/GENOMES/v2/RefSeq/chr1-29MT/GCF_000233375.1_ICSASG_v2_CDS.bed" name="GCF_000233375.1_ICSASG_v2_CDS.bed" visible="true"/>
+        <Track clazz="org.broad.igv.track.FeatureTrack" color="0,0,178" fontSize="8" id="https://gannet.fish.washington.edu/metacarcinus/Salmo_Calig/GENOMES/v2/RefSeq/chr1-29MT/GCF_000233375.1_ICSASG_v2_exon.bed" name="GCF_000233375.1_ICSASG_v2_exon.bed" visible="true"/>
+        <Track clazz="org.broad.igv.track.FeatureTrack" color="0,0,178" fontSize="8" id="https://gannet.fish.washington.edu/metacarcinus/Salmo_Calig/GENOMES/v2/RefSeq/chr1-29MT/GCF_000233375.1_ICSASG_v2_gene.bed" name="GCF_000233375.1_ICSASG_v2_gene.bed" visible="true"/>
+        <Track clazz="org.broad.igv.track.FeatureTrack" color="0,0,178" fontSize="8" id="https://gannet.fish.washington.edu/metacarcinus/Salmo_Calig/GENOMES/v2/RefSeq/chr1-29MT/GCF_000233375.1_ICSASG_v2_mRNA.bed" name="GCF_000233375.1_ICSASG_v2_mRNA.bed" visible="true"/>
+        <Track clazz="org.broad.igv.track.FeatureTrack" color="0,0,178" fontSize="8" id="https://gannet.fish.washington.edu/metacarcinus/Salmo_Calig/GENOMES/v2/RefSeq/chr1-29MT/GCF_000233375.1_ICSASG_v2_promoter.gff" name="GCF_000233375.1_ICSASG_v2_promoter.gff" visible="true"/>
+        <Track clazz="org.broad.igv.track.FeatureTrack" color="0,0,178" fontSize="8" id="https://gannet.fish.washington.edu/metacarcinus/Salmo_Calig/GENOMES/v2/RefSeq/chr1-29MT/GCF_000233375.1_ICSASG_v2_intron.bed" name="GCF_000233375.1_ICSASG_v2_intron.bed" visible="true"/>
+        <Track clazz="org.broad.igv.track.FeatureTrack" color="0,0,178" fontSize="8" id="https://gannet.fish.washington.edu/metacarcinus/Salmo_Calig/GENOMES/v2/RefSeq/chr1-29MT/GCF_000233375.1_ICSASG_v2_genomic_last_exon.gff" name="GCF_000233375.1_ICSASG_v2_genomic_last_exon.gff" visible="true"/>
+        <Track clazz="org.broad.igv.track.FeatureTrack" color="0,0,178" fontSize="8" id="https://gannet.fish.washington.edu/metacarcinus/Salmo_Calig/GENOMES/v2/RefSeq/chr1-29MT/GCF_000233375.1_ICSASG_v2_genomic_first_exon.gff" name="GCF_000233375.1_ICSASG_v2_genomic_first_exon.gff" visible="true"/>
+    </Panel>
+    <HiddenAttributes>
+        <Attribute name="DATA FILE"/>
+        <Attribute name="DATA TYPE"/>
+        <Attribute name="NAME"/>
+    </HiddenAttributes>
+</Session>
