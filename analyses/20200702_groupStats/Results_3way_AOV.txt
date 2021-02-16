@@ -1,0 +1,10 @@
+                    Df Sum Sq Mean Sq F value Pr(>F)  
+Temp                 1    0.1  0.0568   0.395 0.5299  
+Salinity             1    0.9  0.8639   6.004 0.0143 *
+Lice_status          1    0.5  0.4880   3.392 0.0655 .
+Temp:Salinity        1    0.5  0.5302   3.685 0.0549 .
+Temp:Lice_status     1    0.0  0.0036   0.025 0.8745  
+Residuals        14467 2081.5  0.1439                 
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+1767 observations deleted due to missingness

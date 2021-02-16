@@ -22,8 +22,7 @@ library(egg)
 
 read in data
 ```{r}
-DMR <- fread("https://gannet.fish.washington.edu/metacarcinus/Salmo_Calig/analyses/20200702/DMR250bp_MCmax25_cov5x_rms_results_collapsed.tsv")
-
+DMRt <- read.table("~/Desktop/DMR250bp_MCmax25_cov5x_rms_results_collapsed.tsv", header = T, sep = "\t", stringsAsFactors = F)
 ```
 
 

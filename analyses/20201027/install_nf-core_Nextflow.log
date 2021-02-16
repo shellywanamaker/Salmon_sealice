@@ -1,0 +1,591 @@
+#############################
+### nf-core RNAseq ON MOX ###
+#############################
+
+(base) [strigg@mox2 ~]$ cd /gscratch/srlab/strigg/bin/
+(base) [strigg@mox2 bin]$ ls
+anaconda3  BWASP  gunzip  gzip	methylpy  paths.sh  singularity
+(base) [strigg@mox2 bin]$ java -version
+openjdk version "11.0.1-internal" 2018-10-16
+OpenJDK Runtime Environment (build 11.0.1-internal+0-adhoc..src)
+OpenJDK 64-Bit Server VM (build 11.0.1-internal+0-adhoc..src, mixed mode)
+(base) [strigg@mox2 bin]$ curl -fsSL get.nextflow.io | bash
+CAPSULE: Downloading dependency org.slf4j:log4j-over-slf4j:jar:1.7.25
+CAPSULE: Downloading dependency org.multiverse:multiverse-core:jar:0.7.0
+CAPSULE: Downloading dependency com.fasterxml.jackson.core:jackson-databind:jar:2.6.7.2
+CAPSULE: Downloading dependency io.nextflow:nf-httpfs:jar:20.07.1
+CAPSULE: Downloading dependency com.amazonaws:aws-java-sdk-batch:jar:1.11.542
+CAPSULE: Downloading dependency joda-time:joda-time:jar:2.8.1
+CAPSULE: Downloading dependency com.beust:jcommander:jar:1.35
+CAPSULE: Downloading dependency org.jsoup:jsoup:jar:1.11.2
+CAPSULE: Downloading dependency ch.grengine:grengine:jar:1.3.0
+CAPSULE: Downloading dependency jline:jline:jar:2.9
+CAPSULE: Downloading dependency org.codehaus.groovy:groovy:jar:2.5.11
+CAPSULE: Downloading dependency io.nextflow:nf-amazon:jar:20.07.1
+CAPSULE: Downloading dependency javax.mail:mail:jar:1.4.7
+CAPSULE: Downloading dependency org.slf4j:jul-to-slf4j:jar:1.7.25
+CAPSULE: Downloading dependency org.apache.httpcomponents:httpcore:jar:4.4.9
+CAPSULE: Downloading dependency io.nextflow:nf-commons:jar:20.07.1
+CAPSULE: Downloading dependency com.fasterxml.jackson.core:jackson-core:jar:2.6.7
+CAPSULE: Downloading dependency io.nextflow:nextflow:jar:20.07.1
+CAPSULE: Downloading dependency ch.qos.logback:logback-classic:jar:1.1.11
+CAPSULE: Downloading dependency org.iq80.leveldb:leveldb-api:jar:0.12
+CAPSULE: Downloading dependency org.codehaus.groovy:groovy-templates:jar:2.5.11
+CAPSULE: Downloading dependency org.codehaus.gpars:gpars:jar:1.2.1
+CAPSULE: Downloading dependency com.esotericsoftware.kryo:kryo:jar:2.24.0
+CAPSULE: Downloading dependency com.amazonaws:aws-java-sdk-ec2:jar:1.11.542
+CAPSULE: Downloading dependency org.apache.ivy:ivy:jar:2.3.0
+CAPSULE: Downloading dependency org.codehaus.groovy:groovy-xml:jar:2.5.11
+CAPSULE: Downloading dependency com.googlecode.javaewah:JavaEWAH:jar:1.1.6
+CAPSULE: Downloading dependency javax.activation:activation:jar:1.1.1
+CAPSULE: Downloading dependency com.jcraft:jsch:jar:0.1.54
+CAPSULE: Downloading dependency com.jcraft:jzlib:jar:1.1.1
+CAPSULE: Downloading dependency org.codehaus.groovy:groovy-json:jar:2.5.11
+CAPSULE: Downloading dependency org.codehaus.groovy:groovy-nio:jar:2.5.11
+CAPSULE: Downloading dependency org.codehaus.jsr166-mirror:jsr166y:jar:1.7.0
+CAPSULE: Downloading dependency org.slf4j:slf4j-api:jar:1.7.25
+CAPSULE: Downloading dependency org.apache.httpcomponents:httpclient:jar:4.5.5
+CAPSULE: Downloading dependency io.nextflow:nf-tower:jar:20.07.1
+CAPSULE: Downloading dependency com.amazonaws:aws-java-sdk-s3:jar:1.11.542
+CAPSULE: Downloading dependency com.amazonaws:aws-java-sdk-kms:jar:1.11.542
+CAPSULE: Downloading dependency com.amazonaws:aws-java-sdk-iam:jar:1.11.542
+CAPSULE: Downloading dependency ch.qos.logback:logback-core:jar:1.1.11
+CAPSULE: Downloading dependency com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:jar:2.6.7
+CAPSULE: Downloading dependency com.amazonaws:aws-java-sdk-core:jar:1.11.542
+CAPSULE: Downloading dependency commons-lang:commons-lang:jar:2.6
+CAPSULE: Downloading dependency software.amazon.ion:ion-java:jar:1.0.2
+CAPSULE: Downloading dependency org.objenesis:objenesis:jar:2.1
+CAPSULE: Downloading dependency org.yaml:snakeyaml:jar:1.18
+CAPSULE: Downloading dependency org.slf4j:jcl-over-slf4j:jar:1.7.25
+CAPSULE: Downloading dependency io.nextflow:nxf-s3fs:jar:1.0.8
+CAPSULE: Downloading dependency com.google.guava:guava:jar:21.0
+CAPSULE: Downloading dependency com.amazonaws:jmespath-java:jar:1.11.542
+CAPSULE: Downloading dependency org.iq80.leveldb:leveldb:jar:0.12
+CAPSULE: Downloading dependency com.amazonaws:aws-java-sdk-ecs:jar:1.11.542
+CAPSULE: Downloading dependency org.eclipse.jgit:org.eclipse.jgit:jar:5.2.1.201812262042-r
+CAPSULE: Downloading dependency com.fasterxml.jackson.core:jackson-annotations:jar:2.6.0
+CAPSULE: Downloading dependency commons-codec:commons-codec:jar:1.10
+                                                                         
+      N E X T F L O W
+      version 20.07.1 build 5412
+      created 24-07-2020 15:18 UTC (08:18 PDT)
+      cite doi:10.1038/nbt.3820
+      http://nextflow.io
+
+
+Nextflow installation completed. Please note:
+- the executable file `nextflow` has been created in the folder: /gscratch/srlab/strigg/bin
+- you may complete the installation by moving it to a directory in your $PATH
+
+## Adding Nextflow to my path on Mox ##
+
+(base) [strigg@mox2 bin]$ cat ~/.bash_profile 
+#Basic bash profile
+. /usr/local/lib/std.bash_profile
+PATH=/gscratch/strigg/bin:$PATH
+PATH=/gscratch/srlab/programs:$PATH
+PATH=/gscratch/srlab/programs/fastqc_v0.11.8:$PATH
+(base) [strigg@mox2 bin]$ pwd
+/gscratch/srlab/strigg/bin
+(base) [strigg@mox2 bin]$ vim ~/.bash_profile 
+(base) [strigg@mox2 bin]$ source ~/.bash_profile 
+
+### I tried to run the RNAseq test but it failed because of memory allocation ###
+
+(base) [strigg@mox2 bin]$ nextflow run nf-core/rnaseq -profile test, conda
+N E X T F L O W  ~  version 20.07.1
+Pulling nf-core/rnaseq ...
+downloaded from https://github.com/nf-core/rnaseq.git
+Launching `nf-core/rnaseq` [desperate_ride] - revision: 3b6df9bd10 [master]
+#
+[thread 54902 also had an error]# There is insufficient memory for the Java Runtime Environment to continue.
+# Native memory allocation (malloc) failed to allocate 
+201136 bytes for Chunk::new
+# An error report file with more information is saved as:
+# /gscratch/srlab/strigg/bin/hs_err_pid54726.log
+#
+# Compiler replay data is saved as:
+# /gscratch/srlab/strigg/bin/replay_pid54726.log
+
+### I suspect this is because I didn't run it as a script and just tried to run it from the command line prompt.
+### Unfortunately the nodes were all busy so I decided to try running this on RoadRunner instead
+
+
+####################################
+### nf-core RNAseq on Roadrunner ###
+####################################
+
+
+### STEP 1:  install docker
+https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository
+
+srlab@roadrunner:~/Documents/Shelly$ sudo apt-get remove docker docker-engine docker.io containerd runc
+Reading package lists... Done
+Building dependency tree       
+Reading state information... Done
+Package 'docker-engine' is not installed, so not removed
+Package 'docker' is not installed, so not removed
+The following packages were automatically installed and are no longer required:
+  bridge-utils cgroupfs-mount pigz ubuntu-fan
+Use 'sudo apt autoremove' to remove them.
+The following packages will be REMOVED:
+  containerd docker.io runc
+0 upgraded, 0 newly installed, 3 to remove and 0 not upgraded.
+After this operation, 257 MB disk space will be freed.
+Do you want to continue? [Y/n] Y  
+(Reading database ... 441206 files and directories currently installed.)
+Removing docker.io (18.09.7-0ubuntu1~16.04.5) ...
+'/usr/share/docker.io/contrib/nuke-graph-directory.sh' -> '/var/lib/docker/nuke-graph-directory.sh'
+Removing containerd (1.2.6-0ubuntu1~16.04.3) ...
+Removing runc (1.0.0~rc7+git20190403.029124da-0ubuntu1~16.04.4) ...
+Processing triggers for man-db (2.7.5-1) ...
+
+srlab@roadrunner:~/Documents/Shelly$ sudo apt-get update
+Get:1 http://cran.rstudio.com/bin/linux/ubuntu xenial/ InRelease [3,607 B]
+Hit:2 http://us.archive.ubuntu.com/ubuntu xenial InRelease                            
+Get:3 http://security.ubuntu.com/ubuntu xenial-security InRelease [109 kB]            
+Get:4 http://us.archive.ubuntu.com/ubuntu xenial-updates InRelease [109 kB]           
+Get:5 https://deb.nodesource.com/node_12.x xenial InRelease [4,584 B]                 
+Err:1 http://cran.rstudio.com/bin/linux/ubuntu xenial/ InRelease                      
+  The following signatures were invalid: KEYEXPIRED 1602869253  KEYEXPIRED 1602869253  KEYEXPIRED 1602869253
+Get:6 https://packages.microsoft.com/repos/azure-cli xenial InRelease [3,965 B]       
+Get:7 https://packages.microsoft.com/ubuntu/16.04/prod xenial InRelease [4,003 B]     
+Get:8 http://archive.canonical.com/ubuntu xenial InRelease [11.5 kB]                  
+Get:9 http://ppa.launchpad.net/alessandro-strada/ppa/ubuntu xenial InRelease [17.5 kB]
+Get:10 http://us.archive.ubuntu.com/ubuntu xenial-backports InRelease [107 kB]      
+Get:11 https://deb.nodesource.com/node_12.x xenial/main amd64 Packages [765 B]        
+Get:12 https://packages.microsoft.com/repos/azure-cli xenial/main amd64 Packages [12.4 kB]
+Get:13 http://ppa.launchpad.net/graphics-drivers/ppa/ubuntu xenial InRelease [24.3 kB]
+Get:14 http://security.ubuntu.com/ubuntu xenial-security/main amd64 Packages [1,476 kB]
+Get:15 https://packages.microsoft.com/ubuntu/16.04/prod xenial/main amd64 Packages [168 kB]
+Hit:16 http://ppa.launchpad.net/shutter/ppa/ubuntu xenial InRelease                   
+Get:17 http://security.ubuntu.com/ubuntu xenial-security/main i386 Packages [1,075 kB]
+Get:18 http://archive.canonical.com/ubuntu xenial/partner amd64 Packages [3,120 B]    
+Get:19 http://security.ubuntu.com/ubuntu xenial-security/main Translation-en [350 kB] 
+Get:20 http://security.ubuntu.com/ubuntu xenial-security/main amd64 DEP-11 Metadata [93.1 kB]
+Get:21 http://security.ubuntu.com/ubuntu xenial-security/main DEP-11 64x64 Icons [108 kB]
+Get:22 http://security.ubuntu.com/ubuntu xenial-security/restricted amd64 Packages [9,824 B]
+Get:23 http://security.ubuntu.com/ubuntu xenial-security/restricted i386 Packages [9,800 B]
+Get:24 http://security.ubuntu.com/ubuntu xenial-security/universe amd64 Packages [763 kB]
+Get:25 http://security.ubuntu.com/ubuntu xenial-security/universe i386 Packages [643 kB]
+Get:26 http://security.ubuntu.com/ubuntu xenial-security/universe Translation-en [216 kB]
+Get:27 http://us.archive.ubuntu.com/ubuntu xenial-updates/main amd64 Packages [1,880 kB]
+Get:28 http://security.ubuntu.com/ubuntu xenial-security/universe amd64 DEP-11 Metadata [130 kB]
+Get:29 http://security.ubuntu.com/ubuntu xenial-security/universe DEP-11 64x64 Icons [206 kB]
+Get:30 http://archive.canonical.com/ubuntu xenial/partner i386 Packages [3,120 B]     
+Get:31 http://archive.canonical.com/ubuntu xenial/partner Translation-en [1,672 B]    
+Get:32 http://security.ubuntu.com/ubuntu xenial-security/multiverse amd64 Packages [8,236 B]
+Get:33 http://security.ubuntu.com/ubuntu xenial-security/multiverse i386 Packages [8,492 B]
+Get:34 http://security.ubuntu.com/ubuntu xenial-security/multiverse Translation-en [2,888 B]
+Get:35 http://security.ubuntu.com/ubuntu xenial-security/multiverse amd64 DEP-11 Metadata [2,464 B]
+Hit:36 http://ppa.launchpad.net/webupd8team/java/ubuntu xenial InRelease              
+Get:37 http://us.archive.ubuntu.com/ubuntu xenial-updates/main i386 Packages [1,444 kB]
+Get:38 http://us.archive.ubuntu.com/ubuntu xenial-updates/main Translation-en [454 kB]
+Get:39 http://us.archive.ubuntu.com/ubuntu xenial-updates/main amd64 DEP-11 Metadata [326 kB]
+Get:40 http://us.archive.ubuntu.com/ubuntu xenial-updates/main DEP-11 64x64 Icons [249 kB]
+Get:41 http://us.archive.ubuntu.com/ubuntu xenial-updates/restricted amd64 Packages [10.2 kB]
+Get:42 http://us.archive.ubuntu.com/ubuntu xenial-updates/restricted i386 Packages [10.2 kB]
+Get:43 http://us.archive.ubuntu.com/ubuntu xenial-updates/universe amd64 Packages [1,185 kB]
+Get:44 http://us.archive.ubuntu.com/ubuntu xenial-updates/universe i386 Packages [1,054 kB]
+Get:45 http://us.archive.ubuntu.com/ubuntu xenial-updates/universe Translation-en [346 kB]
+Get:46 http://us.archive.ubuntu.com/ubuntu xenial-updates/universe amd64 DEP-11 Metadata [281 kB]
+Get:47 http://us.archive.ubuntu.com/ubuntu xenial-updates/universe DEP-11 64x64 Icons [437 kB]
+Get:48 http://us.archive.ubuntu.com/ubuntu xenial-updates/multiverse amd64 Packages [23.0 kB]
+Get:49 http://us.archive.ubuntu.com/ubuntu xenial-updates/multiverse i386 Packages [21.8 kB]
+Get:50 http://us.archive.ubuntu.com/ubuntu xenial-updates/multiverse Translation-en [8,632 B]
+Get:51 http://us.archive.ubuntu.com/ubuntu xenial-updates/multiverse amd64 DEP-11 Metadata [5,960 B]
+Get:52 http://us.archive.ubuntu.com/ubuntu xenial-backports/main amd64 Packages [9,812 B]
+Get:53 http://ppa.launchpad.net/alessandro-strada/ppa/ubuntu xenial/main amd64 Packages [1,356 B]
+Get:54 http://us.archive.ubuntu.com/ubuntu xenial-backports/main i386 Packages [9,784 B]
+Get:55 http://us.archive.ubuntu.com/ubuntu xenial-backports/main amd64 DEP-11 Metadata [3,328 B]
+Get:56 http://us.archive.ubuntu.com/ubuntu xenial-backports/universe amd64 Packages [11.3 kB]
+Get:57 http://us.archive.ubuntu.com/ubuntu xenial-backports/universe i386 Packages [10.9 kB]
+Get:58 http://us.archive.ubuntu.com/ubuntu xenial-backports/universe Translation-en [4,476 B]
+Get:59 http://us.archive.ubuntu.com/ubuntu xenial-backports/universe amd64 DEP-11 Metadata [6,612 B]
+Get:60 http://us.archive.ubuntu.com/ubuntu xenial-backports/universe DEP-11 64x64 Icons [5,608 B]
+Get:61 http://ppa.launchpad.net/alessandro-strada/ppa/ubuntu xenial/main i386 Packages [1,364 B]
+Get:62 http://ppa.launchpad.net/graphics-drivers/ppa/ubuntu xenial/main amd64 Packages [13.3 kB]
+Get:63 http://ppa.launchpad.net/graphics-drivers/ppa/ubuntu xenial/main i386 Packages [10.5 kB]
+Get:64 http://ppa.launchpad.net/graphics-drivers/ppa/ubuntu xenial/main Translation-en [4,288 B]
+Fetched 13.5 MB in 4s (3,283 kB/s)                                          
+Reading package lists... Done
+W: An error occurred during the signature verification. The repository is not updated and the previous index files will be used. GPG error: http://cran.rstudio.com/bin/linux/ubuntu xenial/ InRelease: The following signatures were invalid: KEYEXPIRED 1602869253  KEYEXPIRED 1602869253  KEYEXPIRED 1602869253
+W: Failed to fetch http://cran.rstudio.com/bin/linux/ubuntu/xenial/InRelease  The following signatures were invalid: KEYEXPIRED 1602869253  KEYEXPIRED 1602869253  KEYEXPIRED 1602869253
+W: Some index files failed to download. They have been ignored, or old ones used instead.
+srlab@roadrunner:~/Documents/Shelly$ sudo apt-get install \
+>     apt-transport-https \
+>     ca-certificates \
+>     curl \
+>     gnupg-agent \
+>     software-properties-common
+Reading package lists... Done
+Building dependency tree       
+Reading state information... Done
+gnupg-agent is already the newest version (2.1.11-6ubuntu2.1).
+gnupg-agent set to manually installed.
+The following packages were automatically installed and are no longer required:
+  bridge-utils cgroupfs-mount pigz ubuntu-fan
+Use 'sudo apt autoremove' to remove them.
+The following additional packages will be installed:
+  libcurl3-gnutls python3-software-properties software-properties-gtk
+The following packages will be upgraded:
+  apt-transport-https ca-certificates curl libcurl3-gnutls
+  python3-software-properties software-properties-common software-properties-gtk
+7 upgraded, 0 newly installed, 0 to remove and 379 not upgraded.
+Need to get 573 kB of archives.
+After this operation, 46.1 kB disk space will be freed.
+Do you want to continue? [Y/n] Y
+Get:1 http://us.archive.ubuntu.com/ubuntu xenial-updates/main amd64 curl amd64 7.47.0-1ubuntu2.16 [139 kB]
+Get:2 http://us.archive.ubuntu.com/ubuntu xenial-updates/main amd64 libcurl3-gnutls amd64 7.47.0-1ubuntu2.16 [184 kB]
+Get:3 http://us.archive.ubuntu.com/ubuntu xenial-updates/main amd64 apt-transport-https amd64 1.2.32ubuntu0.1 [26.7 kB]
+Get:4 http://us.archive.ubuntu.com/ubuntu xenial-updates/main amd64 ca-certificates all 20190110~16.04.1 [146 kB]
+Get:5 http://us.archive.ubuntu.com/ubuntu xenial-updates/main amd64 software-properties-common all 0.96.20.10 [9,504 B]
+Get:6 http://us.archive.ubuntu.com/ubuntu xenial-updates/main amd64 software-properties-gtk all 0.96.20.10 [47.4 kB]
+Get:7 http://us.archive.ubuntu.com/ubuntu xenial-updates/main amd64 python3-software-properties all 0.96.20.10 [20.2 kB]
+Fetched 573 kB in 0s (1,075 kB/s)                      
+Preconfiguring packages ...
+(Reading database ... 440963 files and directories currently installed.)
+Preparing to unpack .../curl_7.47.0-1ubuntu2.16_amd64.deb ...
+Unpacking curl (7.47.0-1ubuntu2.16) over (7.47.0-1ubuntu2.14) ...
+Preparing to unpack .../libcurl3-gnutls_7.47.0-1ubuntu2.16_amd64.deb ...
+Unpacking libcurl3-gnutls:amd64 (7.47.0-1ubuntu2.16) over (7.47.0-1ubuntu2.14) ...
+Preparing to unpack .../apt-transport-https_1.2.32ubuntu0.1_amd64.deb ...
+Unpacking apt-transport-https (1.2.32ubuntu0.1) over (1.2.32) ...
+Preparing to unpack .../ca-certificates_20190110~16.04.1_all.deb ...
+Unpacking ca-certificates (20190110~16.04.1) over (20170717~16.04.2) ...
+Preparing to unpack .../software-properties-common_0.96.20.10_all.deb ...
+Unpacking software-properties-common (0.96.20.10) over (0.96.20.9) ...
+Preparing to unpack .../software-properties-gtk_0.96.20.10_all.deb ...
+Unpacking software-properties-gtk (0.96.20.10) over (0.96.20.9) ...
+Preparing to unpack .../python3-software-properties_0.96.20.10_all.deb ...
+Unpacking python3-software-properties (0.96.20.10) over (0.96.20.9) ...
+Processing triggers for man-db (2.7.5-1) ...
+Processing triggers for libc-bin (2.23-0ubuntu11) ...
+Processing triggers for dbus (1.10.6-1ubuntu3.4) ...
+Processing triggers for shared-mime-info (1.5-2ubuntu0.2) ...
+Processing triggers for hicolor-icon-theme (0.15-0ubuntu1.1) ...
+Processing triggers for desktop-file-utils (0.22-1ubuntu5.2) ...
+Processing triggers for bamfdaemon (0.5.3~bzr0+16.04.20180209-0ubuntu1) ...
+Rebuilding /usr/share/applications/bamf-2.index...
+Processing triggers for gnome-menus (3.13.3-6ubuntu3.1) ...
+Processing triggers for mime-support (3.59ubuntu1) ...
+Setting up libcurl3-gnutls:amd64 (7.47.0-1ubuntu2.16) ...
+Setting up curl (7.47.0-1ubuntu2.16) ...
+Setting up apt-transport-https (1.2.32ubuntu0.1) ...
+Setting up ca-certificates (20190110~16.04.1) ...
+Setting up python3-software-properties (0.96.20.10) ...
+Setting up software-properties-common (0.96.20.10) ...
+Setting up software-properties-gtk (0.96.20.10) ...
+Processing triggers for libc-bin (2.23-0ubuntu11) ...
+Processing triggers for ca-certificates (20190110~16.04.1) ...
+Updating certificates in /etc/ssl/certs...
+10 added, 31 removed; done.
+Running hooks in /etc/ca-certificates/update.d...
+
+Adding debian:GDCA_TrustAUTH_R5_ROOT.pem
+Adding debian:GlobalSign_Root_CA_-_R6.pem
+Adding debian:OISTE_WISeKey_Global_Root_GC_CA.pem
+Adding debian:SSL.com_EV_Root_Certification_Authority_ECC.pem
+Adding debian:SSL.com_EV_Root_Certification_Authority_RSA_R2.pem
+Adding debian:SSL.com_Root_Certification_Authority_ECC.pem
+Adding debian:SSL.com_Root_Certification_Authority_RSA.pem
+Adding debian:TrustCor_ECA-1.pem
+Adding debian:TrustCor_RootCert_CA-1.pem
+Adding debian:TrustCor_RootCert_CA-2.pem
+Removing debian:ACEDICOM_Root.pem
+Removing debian:AddTrust_External_Root.pem
+Removing debian:AddTrust_Low-Value_Services_Root.pem
+Removing debian:AddTrust_Public_Services_Root.pem
+Removing debian:AddTrust_Qualified_Certificates_Root.pem
+Removing debian:CA_Disig_Root_R1.pem
+Removing debian:CNNIC_ROOT.pem
+Removing debian:Camerfirma_Chambers_of_Commerce_Root.pem
+Removing debian:Camerfirma_Global_Chambersign_Root.pem
+Removing debian:Certinomis_-_Autorité_Racine.pem
+Removing debian:Certum_Root_CA.pem
+Removing debian:China_Internet_Network_Information_Center_EV_Certificates_Root.pem
+Removing debian:Comodo_Secure_Services_root.pem
+Removing debian:Comodo_Trusted_Services_root.pem
+Removing debian:DST_ACES_CA_X6.pem
+Removing debian:GeoTrust_Global_CA_2.pem
+Removing debian:PSCProcert.pem
+Removing debian:Security_Communication_EV_RootCA1.pem
+Removing debian:Swisscom_Root_CA_1.pem
+Removing debian:Swisscom_Root_CA_2.pem
+Removing debian:Swisscom_Root_EV_CA_2.pem
+Removing debian:TURKTRUST_Certificate_Services_Provider_Root_2007.pem
+Removing debian:TÜBİTAK_UEKAE_Kök_Sertifika_Hizmet_Sağlayıcısı_-_Sürüm_3.pem
+Removing debian:TÜRKTRUST_Elektronik_Sertifika_Hizmet_Sağlayıcısı_H5.pem
+Removing debian:UTN_USERFirst_Hardware_Root_CA.pem
+Removing debian:Visa_eCommerce_Root.pem
+Removing debian:Certplus_Root_CA_G1.pem
+Removing debian:Certplus_Root_CA_G2.pem
+Removing debian:OpenTrust_Root_CA_G1.pem
+Removing debian:OpenTrust_Root_CA_G2.pem
+Removing debian:OpenTrust_Root_CA_G3.pem
+done.
+done.
+
+
+srlab@roadrunner:~/Documents/Shelly$ curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+OK
+
+
+srlab@roadrunner:~/Documents/Shelly$ sudo apt-key fingerprint 0EBFCD88
+pub   4096R/0EBFCD88 2017-02-22
+      Key fingerprint = 9DC8 5822 9FC7 DD38 854A  E2D8 8D81 803C 0EBF CD88
+uid                  Docker Release (CE deb) <docker@docker.com>
+sub   4096R/F273FCD8 2017-02-22
+
+srlab@roadrunner:~/Documents/Shelly$ sudo add-apt-repository \
+>    "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+>    $(lsb_release -cs) \
+>    stable"
+
+srlab@roadrunner:~/Documents/Shelly$ sudo apt-get update
+Get:1 http://cran.rstudio.com/bin/linux/ubuntu xenial/ InRelease [3,607 B]
+Get:2 https://download.docker.com/linux/ubuntu xenial InRelease [66.2 kB]             
+Err:1 http://cran.rstudio.com/bin/linux/ubuntu xenial/ InRelease                      
+  The following signatures were invalid: KEYEXPIRED 1602869253  KEYEXPIRED 1602869253  KEYEXPIRED 1602869253
+Hit:3 https://deb.nodesource.com/node_12.x xenial InRelease                           
+Hit:4 http://us.archive.ubuntu.com/ubuntu xenial InRelease                            
+Hit:5 http://archive.canonical.com/ubuntu xenial InRelease                            
+Hit:6 http://security.ubuntu.com/ubuntu xenial-security InRelease                     
+Hit:7 https://packages.microsoft.com/repos/azure-cli xenial InRelease                 
+Hit:8 http://us.archive.ubuntu.com/ubuntu xenial-updates InRelease       
+Hit:9 https://packages.microsoft.com/ubuntu/16.04/prod xenial InRelease  
+Hit:10 http://ppa.launchpad.net/alessandro-strada/ppa/ubuntu xenial InRelease
+Get:11 https://download.docker.com/linux/ubuntu xenial/stable amd64 Packages [15.0 kB]
+Hit:12 http://us.archive.ubuntu.com/ubuntu xenial-backports InRelease                 
+Hit:13 http://ppa.launchpad.net/graphics-drivers/ppa/ubuntu xenial InRelease          
+Hit:14 http://ppa.launchpad.net/shutter/ppa/ubuntu xenial InRelease           
+Hit:15 http://ppa.launchpad.net/webupd8team/java/ubuntu xenial InRelease      
+Fetched 84.8 kB in 1s (43.2 kB/s)                                             
+Reading package lists... Done
+W: An error occurred during the signature verification. The repository is not updated and the previous index files will be used. GPG error: http://cran.rstudio.com/bin/linux/ubuntu xenial/ InRelease: The following signatures were invalid: KEYEXPIRED 1602869253  KEYEXPIRED 1602869253  KEYEXPIRED 1602869253
+W: Failed to fetch http://cran.rstudio.com/bin/linux/ubuntu/xenial/InRelease  The following signatures were invalid: KEYEXPIRED 1602869253  KEYEXPIRED 1602869253  KEYEXPIRED 1602869253
+W: Some index files failed to download. They have been ignored, or old ones used instead.
+srlab@roadrunner:~/Documents/Shelly$ sudo apt-get install docker-ce docker-ce-cli containerd.io
+Reading package lists... Done
+Building dependency tree       
+Reading state information... Done
+The following packages were automatically installed and are no longer required:
+  bridge-utils ubuntu-fan
+Use 'sudo apt autoremove' to remove them.
+The following additional packages will be installed:
+  aufs-tools
+The following NEW packages will be installed:
+  aufs-tools containerd.io docker-ce docker-ce-cli
+0 upgraded, 4 newly installed, 0 to remove and 379 not upgraded.
+Need to get 91.1 MB of archives.
+After this operation, 410 MB of additional disk space will be used.
+Do you want to continue? [Y/n] Y
+Get:1 http://us.archive.ubuntu.com/ubuntu xenial/universe amd64 aufs-tools amd64 1:3.2+20130722-1.1ubuntu1 [92.9 kB]
+Get:2 https://download.docker.com/linux/ubuntu xenial/stable amd64 containerd.io amd64 1.3.7-1 [24.3 MB]
+Get:3 https://download.docker.com/linux/ubuntu xenial/stable amd64 docker-ce-cli amd64 5:19.03.13~3-0~ubuntu-xenial [44.2 MB]
+Get:4 https://download.docker.com/linux/ubuntu xenial/stable amd64 docker-ce amd64 5:19.03.13~3-0~ubuntu-xenial [22.5 MB]
+Fetched 91.1 MB in 3s (27.3 MB/s)    
+Selecting previously unselected package aufs-tools.
+(Reading database ... 440942 files and directories currently installed.)
+Preparing to unpack .../aufs-tools_1%3a3.2+20130722-1.1ubuntu1_amd64.deb ...
+Unpacking aufs-tools (1:3.2+20130722-1.1ubuntu1) ...
+Selecting previously unselected package containerd.io.
+Preparing to unpack .../containerd.io_1.3.7-1_amd64.deb ...
+Unpacking containerd.io (1.3.7-1) ...
+Selecting previously unselected package docker-ce-cli.
+Preparing to unpack .../docker-ce-cli_5%3a19.03.13~3-0~ubuntu-xenial_amd64.deb ...
+Unpacking docker-ce-cli (5:19.03.13~3-0~ubuntu-xenial) ...
+Selecting previously unselected package docker-ce.
+Preparing to unpack .../docker-ce_5%3a19.03.13~3-0~ubuntu-xenial_amd64.deb ...
+Unpacking docker-ce (5:19.03.13~3-0~ubuntu-xenial) ...
+Processing triggers for libc-bin (2.23-0ubuntu11) ...
+Processing triggers for man-db (2.7.5-1) ...
+Processing triggers for ureadahead (0.100.0-19.1) ...
+ureadahead will be reprofiled on next reboot
+Processing triggers for systemd (229-4ubuntu21.22) ...
+Setting up aufs-tools (1:3.2+20130722-1.1ubuntu1) ...
+Setting up containerd.io (1.3.7-1) ...
+Setting up docker-ce-cli (5:19.03.13~3-0~ubuntu-xenial) ...
+Setting up docker-ce (5:19.03.13~3-0~ubuntu-xenial) ...
+Installing new version of config file /etc/init.d/docker ...
+Installing new version of config file /etc/init/docker.conf ...
+Processing triggers for libc-bin (2.23-0ubuntu11) ...
+Processing triggers for ureadahead (0.100.0-19.1) ...
+Processing triggers for systemd (229-4ubuntu21.22) ...
+
+
+
+srlab@roadrunner:~/Documents/Shelly$ sudo apt-get install docker-ce=5:19.03.13~3-0~ubuntu-xenial docker-ce-cli=5:19.03.13~3-0~ubuntu-xenial containerd.io
+Reading package lists... Done
+Building dependency tree       
+Reading state information... Done
+containerd.io is already the newest version (1.3.7-1).
+docker-ce-cli is already the newest version (5:19.03.13~3-0~ubuntu-xenial).
+docker-ce is already the newest version (5:19.03.13~3-0~ubuntu-xenial).
+The following packages were automatically installed and are no longer required:
+  bridge-utils ubuntu-fan
+Use 'sudo apt autoremove' to remove them.
+0 upgraded, 0 newly installed, 0 to remove and 379 not upgraded.
+
+srlab@roadrunner:~/Documents/Shelly$ sudo docker run hello-world
+Unable to find image 'hello-world:latest' locally
+latest: Pulling from library/hello-world
+0e03bdcc26d7: Pull complete 
+Digest: sha256:8c5aeeb6a5f3ba4883347d3747a7249f491766ca1caa47e5da5dfcf6b9b717c0
+Status: Downloaded newer image for hello-world:latest
+
+Hello from Docker!
+This message shows that your installation appears to be working correctly.
+
+To generate this message, Docker took the following steps:
+ 1. The Docker client contacted the Docker daemon.
+ 2. The Docker daemon pulled the "hello-world" image from the Docker Hub.
+    (amd64)
+ 3. The Docker daemon created a new container from that image which runs the
+    executable that produces the output you are currently reading.
+ 4. The Docker daemon streamed that output to the Docker client, which sent it
+    to your terminal.
+
+To try something more ambitious, you can run an Ubuntu container with:
+ $ docker run -it ubuntu bash
+
+Share images, automate workflows, and more with a free Docker ID:
+ https://hub.docker.com/
+
+For more examples and ideas, visit:
+ https://docs.docker.com/get-started/
+
+srlab@roadrunner:~/Documents/Shelly$ docker run -it ubuntu bash
+docker: Got permission denied while trying to connect to the Docker daemon socket at unix:///var/run/docker.sock: Post http://%2Fvar%2Frun%2Fdocker.sock/v1.40/containers/create: dial unix /var/run/docker.sock: connect: permission denied.
+See 'docker run --help'.
+
+#### NEED TO CHANGE PERSMISSIONS!!!!
+found this out from this issue:  https://github.com/nf-core/ampliseq/issues/55
+here's the instructions for how to change the permissions: https://docs.docker.com/engine/install/linux-postinstall/
+
+srlab@roadrunner:~/Documents/Shelly$ sudo groupadd docker
+groupadd: group 'docker' already exists
+srlab@roadrunner:~/Documents/Shelly$ sudo usermod -aG docker srlab
+srlab@roadrunner:~/Documents/Shelly$ exit
+logout
+Connection to roadrunner.fish.washington.edu closed.
+shellys-mbp:data Shelly$ ssh srlab@roadrunner.fish.washington.edu
+srlab@roadrunner.fish.washington.edu's password: 
+Welcome to Ubuntu 16.04.6 LTS (GNU/Linux 4.4.0-166-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+ * Introducing self-healing high availability clustering for MicroK8s!
+   Super simple, hardened and opinionated Kubernetes for production.
+
+     https://microk8s.io/high-availability
+
+380 packages can be updated.
+338 updates are security updates.
+
+Last login: Tue Oct 27 09:56:15 2020 from 73.97.158.41
+srlab@roadrunner:~$ newgrp docker 
+srlab@roadrunner:~$ docker run hello-world
+
+Hello from Docker!
+This message shows that your installation appears to be working correctly.
+
+To generate this message, Docker took the following steps:
+ 1. The Docker client contacted the Docker daemon.
+ 2. The Docker daemon pulled the "hello-world" image from the Docker Hub.
+    (amd64)
+ 3. The Docker daemon created a new container from that image which runs the
+    executable that produces the output you are currently reading.
+ 4. The Docker daemon streamed that output to the Docker client, which sent it
+    to your terminal.
+
+To try something more ambitious, you can run an Ubuntu container with:
+ $ docker run -it ubuntu bash
+
+Share images, automate workflows, and more with a free Docker ID:
+ https://hub.docker.com/
+
+For more examples and ideas, visit:
+ https://docs.docker.com/get-started/
+
+### Run RNAseq pipeline test
+
+srlab@roadrunner:~/Documents/Shelly$ nextflow run nf-core/rnaseq -profile test,docker
+N E X T F L O W  ~  version 20.07.1
+Launching `nf-core/rnaseq` [nasty_legentil] - revision: 3b6df9bd10 [master]
+Both GTF and GFF have been provided: Using GTF as priority.
+----------------------------------------------------
+                                        ,--./,-.
+        ___     __   __   __   ___     /,-._.--~'
+  |\ | |__  __ /  ` /  \ |__) |__         }  {
+  | \| |       \__, \__/ |  \ |___     \`-._,-`-,
+                                        `._,._,'
+  nf-core/rnaseq v1.4.2
+----------------------------------------------------
+Pipeline Release  : master
+Run Name          : nasty_legentil
+Reads             : data/*{1,2}.fastq.gz
+Data Type         : Single-End
+Strandedness      : None
+Trimming          : 5'R1: 0 / 5'R2: 0 / 3'R1: 0 / 3'R2: 0 / NextSeq Trim: 0
+Aligner           : STAR
+Fasta Ref         : https://github.com/nf-core/test-datasets/raw/rnaseq/reference/genome.fa
+GTF Annotation    : https://github.com/nf-core/test-datasets/raw/rnaseq/reference/genes.gtf
+GFF3 Annotation   : https://github.com/nf-core/test-datasets/raw/rnaseq/reference/genes.gff
+Remove Ribosomal RNA: false
+Biotype GTF field : gene_biotype
+Save prefs        : Ref Genome: No / Trimmed FastQ: No / Alignment intermediates: No
+Max Resources     : 6 GB memory, 2 cpus, 2d time per job
+Container         : docker - nfcore/rnaseq:1.4.2
+Output dir        : ./results
+Launch dir        : /home/srlab/Documents/Shelly
+Working dir       : /home/srlab/Documents/Shelly/work
+Script dir        : /home/srlab/.nextflow/assets/nf-core/rnaseq
+User              : srlab
+Config Profile    : test,docker
+Config Description: Minimal test dataset to check pipeline function
+----------------------------------------------------
+executor >  local (47)
+[d7/ef9a14] process > get_software_versions                 [100%] 1 of 1 ✔
+[15/0858b7] process > makeBED12 (genes.gtf)                 [100%] 1 of 1 ✔
+[0a/ed69e9] process > makeSTARindex (genome.fa)             [100%] 1 of 1 ✔
+[1a/7baa5c] process > fastqc (SRR4238379)                   [100%] 4 of 4 ✔
+[49/0fad0b] process > trim_galore (SRR4238379)              [100%] 4 of 4 ✔
+[2c/a0652d] process > star (SRR4238379)                     [100%] 4 of 4 ✔
+[3d/415c00] process > rseqc (SRR4238379_subsampAlignedBy... [100%] 4 of 4 ✔
+[54/26e67a] process > preseq (SRR4238379_subsampAlignedB... [100%] 4 of 4 ✔
+[4d/44cb89] process > markDuplicates (SRR4238379_subsamp... [100%] 4 of 4 ✔
+[c4/ec52e7] process > qualimap (SRR4238379_subsampAligne... [100%] 4 of 4 ✔
+[e8/02d25b] process > dupradar (SRR4238379_subsampAligne... [100%] 4 of 4 ✔
+[27/a373f2] process > featureCounts (SRR4238379_subsampA... [100%] 4 of 4 ✔
+[e0/29f0cf] process > merge_featureCounts (SRR4238351_su... [100%] 1 of 1 ✔
+[e2/f3d3a0] process > stringtieFPKM (SRR4238379_subsampA... [100%] 4 of 4 ✔
+[3d/ca8b62] process > sample_correlation (SRR4238351_sub... [100%] 1 of 1 ✔
+[58/eebd6d] process > multiqc                               [100%] 1 of 1 ✔
+[65/831e6e] process > output_documentation                  [100%] 1 of 1 ✔
+[0;35m[nf-core/rnaseq] Pipeline completed successfully
+WARN: To render the execution DAG in the required format it is required to install Graphviz -- See http://www.graphviz.org for more info.
+Completed at: 27-Oct-2020 10:42:45
+Duration    : 4m 29s
+CPU hours   : 0.1
+Succeeded   : 47
+
+### Running RNAseq pipeline on the data
+srlab@roadrunner:~/Documents/Shelly/Ssalar nextflow run nf-core/rnaseq -profile docker \
+--max_memory '45.GB'
+--reads '*_{1,2}.fastq.gz' \
+--aligner hisat2 \
+--fasta GCF_000233375.1_ICSASG_v2/GCF_000233375.1_ICSASG_v2_genomic.fa \
+--gtf GCF_000233375.1_ICSASG_v2/GCF_000233375.1_ICSASG_v2_genomic.gtf \
+--gff GCF_000233375.1_ICSASG_v2/GCF_000233375.1_ICSASG_v2_genomic.gff \
+--bed12 GCF_000233375.1_ICSASG_v2/GCF_000233375.1_ICSASG_v2_MASTER.bed \
+--saveReference \
+--saveTrimmed \
+--saveUnaligned \
+--saveAlignedIntermediates 
+
+
+
+
