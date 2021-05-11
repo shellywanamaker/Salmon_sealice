@@ -1,12 +1,12 @@
 # Library Prep Methods
-[https://shellytrigg.github.io/93th-post/](https://shellytrigg.github.io/93th-post/)
-[https://shellytrigg.github.io/94th-post/](https://shellytrigg.github.io/94th-post/)
-[https://shellytrigg.github.io/107th-post/](https://shellytrigg.github.io/107th-post/)
-[https://shellytrigg.github.io/110th-post/](https://shellytrigg.github.io/110th-post/)
-[https://shellytrigg.github.io/120th-post/](https://shellytrigg.github.io/120th-post/)
-[https://shellytrigg.github.io/121th-post/](https://shellytrigg.github.io/121th-post/)
-[https://shellytrigg.github.io/122th-post/](https://shellytrigg.github.io/122th-post/)
-[https://shellytrigg.github.io/123th-post/](https://shellytrigg.github.io/123th-post/)
+- [https://shellytrigg.github.io/93th-post/](https://shellytrigg.github.io/93th-post/)
+- [https://shellytrigg.github.io/94th-post/](https://shellytrigg.github.io/94th-post/)
+- [https://shellytrigg.github.io/107th-post/](https://shellytrigg.github.io/107th-post/)
+- [https://shellytrigg.github.io/110th-post/](https://shellytrigg.github.io/110th-post/)
+- [https://shellytrigg.github.io/120th-post/](https://shellytrigg.github.io/120th-post/)
+- [https://shellytrigg.github.io/121th-post/](https://shellytrigg.github.io/121th-post/)
+- [https://shellytrigg.github.io/122th-post/](https://shellytrigg.github.io/122th-post/)
+- [https://shellytrigg.github.io/123th-post/](https://shellytrigg.github.io/123th-post/)
 
 ---
 
