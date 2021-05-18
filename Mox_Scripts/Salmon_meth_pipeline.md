@@ -210,6 +210,11 @@ noebook post: [https://shellytrigg.github.io/320th-post/](https://shellytrigg.gi
 
 notebook post: [https://shellytrigg.github.io/350th-post/](https://shellytrigg.github.io/350th-post/)
 
+[20201001_GenomicFeatureAnalysis](https://htmlpreview.github.io/?https://github.com/shellytrigg/Salmon_sealice/blob/master/analyses/20201001_GenomicFeatureAnalysis/20201001_GenomicFeatureAnalysis.html)
+
+
+chi square statistics: [chi_sq_bin_feats.csv](https://github.com/shellytrigg/Salmon_sealice/blob/master/analyses/20201001_GenomicFeatureAnalysis/chi_sq_bin_feats.csv)
+
 ---
 
 
