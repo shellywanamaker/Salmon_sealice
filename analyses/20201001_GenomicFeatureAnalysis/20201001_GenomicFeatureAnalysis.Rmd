@@ -1,5 +1,5 @@
 ---
-title: "Untitled"
+title: "Genomic Feature Analysis"
 author: "Shelly Trigg"
 date: "10/1/2020"
 output: html_document
@@ -9,6 +9,7 @@ load libraries
 ```{r}
 library(data.table)
 library(ggplot2)
+library(dplyr)
 ```
 
 download data
@@ -56,27 +57,34 @@ plot
 #plot all pH comparions
 #crp <- colorRampPalette(RColorBrewer::brewer.pal(9,"BuGn"))
 #pal <- crp()
+ggplot(DMR_bkgd_features[!(grep("first|last|mRNA", DMR_bkgd_features$feature_simp)),],aes(x = comparison, y = ..count.., fill = factor(feature_simp), group = feature_simp)) + geom_bar(position = "fill", color = "black") + scale_y_continuous(labels=scales::percent) + ylab("% of total regions") + theme_bw() + theme(axis.text.x = element_text(size = 7, angle = 60, hjust = 1), axis.title = element_text(size = 12, face = "bold")) + scale_fill_manual("Feature",values = RColorBrewer::brewer.pal(7,"BuGn")) + ggtitle("genomic features")
 
 jpeg("../../img/DMR_genomic_feature_overlap.jpg", width = 6, height = 4, units = "in", res = 300)
 ggplot(DMR_bkgd_features[!(grep("first|last|mRNA", DMR_bkgd_features$feature_simp)),],aes(x = comparison, y = ..count.., fill = factor(feature_simp), group = feature_simp)) + geom_bar(position = "fill", color = "black") + scale_y_continuous(labels=scales::percent) + ylab("% of total regions") + theme_bw() + theme(axis.text.x = element_text(size = 7, angle = 60, hjust = 1), axis.title = element_text(size = 12, face = "bold")) + scale_fill_manual("Feature",values = RColorBrewer::brewer.pal(7,"BuGn")) + ggtitle("genomic features")
 dev.off()
 
-```
-
-```{r}
 
 DMR_bkgd_features_totals <- DMR_bkgd_features %>% group_by(feature_simp,comparison) %>% summarise(count= n()) 
 
 DMR_bkgd_features_totals_percentages <- DMR_bkgd_features_totals[-grep("mRNA|first|last",DMR_bkgd_features_totals$feature_simp),] %>% group_by(comparison) %>% mutate(perc_regions = count/sum(count)*100)
 
+crp <- colorRampPalette(RColorBrewer::brewer.pal(9,"BuGn"))
+pal <- crp(33)
+
 ggplot(DMR_bkgd_features_totals_percentages,aes(x = comparison, y = perc_regions, fill = feature_simp)) + geom_bar(stat = "identity", color = "black") + ylab("% of total regions") + theme_bw() + theme(axis.text.x = element_text(size = 7, angle = 60, hjust = 1), axis.title = element_text(size = 12, face = "bold")) + ggtitle("genomic features") + facet_wrap(~feature_simp, scale = "free") + scale_fill_manual("Feature",values = RColorBrewer::brewer.pal(7,"BuGn"))
 
 
 #exon and intron position
+ggplot(DMR_bkgd_features[grep("first_exon|last_exon", DMR_bkgd_features$feature_simp),],aes(x = comparison, y = ..count.., fill = factor(feature_simp), group = feature_simp)) + geom_bar(position = "fill", color = "black") + scale_y_continuous(labels=scales::percent) + ylab("% of total regions") + theme_bw() + theme(axis.text.x = element_text(size = 7, angle = 60, hjust = 1), axis.title = element_text(size = 12, face = "bold")) + scale_fill_manual("Feature",values = RColorBrewer::brewer.pal(7,"BuGn")) + ggtitle("first and last exons percentages")
 
-ggplot(DMR_bkgd_features_totals[grep("exon",DMR_bkgd_features_totals$feature_simp),],aes(x = feature_simp, y = count, fill = feature_simp)) + geom_bar(stat = "identity", color = "black") + ylab("count") + theme_bw() + theme(axis.text.x = element_text(size = 7, angle = 60, hjust = 1), axis.title = element_text(size = 12, face = "bold")) + ggtitle("genomic features") + facet_wrap(~comparison, scale = "free") + scale_fill_manual("Feature",values = RColorBrewer::brewer.pal(7,"BuGn"))
+ggplot(DMR_bkgd_features_totals[grep("exon",DMR_bkgd_features_totals$feature_simp),],aes(x = feature_simp, y = count, fill = feature_simp)) + geom_bar(stat = "identity", color = "black") + ylab("count") + theme_bw() + theme(axis.text.x = element_text(size = 7, angle = 60, hjust = 1), axis.title = element_text(size = 12, face = "bold")) + ggtitle("first and last exon counts") + facet_wrap(~comparison, scale = "free") + scale_fill_manual("Feature",values = RColorBrewer::brewer.pal(7,"BuGn"))
 
-ggplot(DMR_bkgd_features_totals[grep("intron",DMR_bkgd_features_totals$feature_simp),],aes(x = factor(feature_simp, levels = c("intron", "first_intron", "last_intron")), y = count, fill = feature_simp)) + geom_bar(stat = "identity", color = "black") + ylab("count") + theme_bw() + theme(axis.text.x = element_text(size = 7, angle = 60, hjust = 1), axis.title = element_text(size = 12, face = "bold")) + ggtitle("genomic features") + facet_wrap(~comparison, scale = "free") + scale_fill_manual("Feature",values = RColorBrewer::brewer.pal(7,"BuGn"))
+
+ggplot(DMR_bkgd_features[grep("first_intron|last_intron", DMR_bkgd_features$feature_simp),],aes(x = comparison, y = ..count.., fill = factor(feature_simp), group = feature_simp)) + geom_bar(position = "fill", color = "black") + scale_y_continuous(labels=scales::percent) + ylab("% of total regions") + theme_bw() + theme(axis.text.x = element_text(size = 7, angle = 60, hjust = 1), axis.title = element_text(size = 12, face = "bold")) + scale_fill_manual("Feature",values = RColorBrewer::brewer.pal(7,"BuGn")) + ggtitle("first and last introns percentages")
+
+ggplot(DMR_bkgd_features_totals[grep("intron",DMR_bkgd_features_totals$feature_simp),],aes(x = factor(feature_simp, levels = c("intron", "first_intron", "last_intron")), y = count, fill = feature_simp)) + geom_bar(stat = "identity", color = "black") + ylab("count") + theme_bw() + theme(axis.text.x = element_text(size = 7, angle = 60, hjust = 1), axis.title = element_text(size = 12, face = "bold")) + ggtitle("first and last introns counts") + facet_wrap(~comparison, scale = "free") + scale_fill_manual("Feature",values = RColorBrewer::brewer.pal(7,"BuGn"))
+
+
 
 # TE class
 
@@ -98,8 +106,7 @@ ggplot(DMR_bkgd_features_TE[-grep("Satelite|Simple_repeat|SINE",DMR_bkgd_feature
 
 ggplot(DMR_bkgd_features_TE[-grep("Satelite|Simple_repeat|SINE",DMR_bkgd_features_TE$class),] ,aes(x = comparison, y = ..count.., fill = factor(subclass))) + geom_bar(position = "fill", color = "black") + scale_y_continuous(labels=scales::percent) + ylab("% of total regions") + theme_bw() + theme(axis.text.x = element_text(size = 7, angle = 60, hjust = 1), axis.title = element_text(size = 12, face = "bold")) + scale_fill_manual("Feature",values = pal) + ggtitle("TE classes") + facet_wrap(~class)
 
-crp <- colorRampPalette(RColorBrewer::brewer.pal(9,"BuGn"))
-pal <- crp(33)
+
 
 ```
 
@@ -107,43 +114,44 @@ pal <- crp(33)
 ```{r}
 
 # create table with feature totals for DMRs
-DMR_feat_summary <- data.frame(table(DMR_bin_features[,c("feature","comparison")]))
+DMR_feat_summary <- data.frame(table(DMR_bkgd_features[,c("feature","comparison")]))
 #rename columns
 colnames(DMR_feat_summary) <- c("feature","comparison", "numRegion")
  
 # create table with feature totals for background regions
-feat_summary <- data.frame(table(bkgd_bin_features[,c("feature","comparison")]))
+#feat_summary <- data.frame(table(bkgd_bin_features[,c("feature","comparison")]))
 #rename columns
-colnames(feat_summary) <- c("feature", "comparison","numRegion")
+#colnames(feat_summary) <- c("feature", "comparison","numRegion")
 
 #remove columns features we don't want to look at
-feat_summary <- feat_summary[-grep("C_gene_segment|region|rRNA|match|D_loop|V_gene_segment",feat_summary$feature),]
+#feat_summary <- feat_summary[-grep("C_gene_segment|region|rRNA|match|D_loop|V_gene_segment",feat_summary$feature),]
 
 #merge background and DMR feature totals 
-feat_summ <- rbind(DMR_feat_summary, feat_summary)
+#feat_summ <- rbind(DMR_feat_summary, feat_summary)
 
 #replace NAs with 0
-feat_summ[is.na(feat_summ)] <- 0
+#eat_summ[is.na(feat_summ)] <- 0
+str(DMR_feat_summary[is.na(DMR_feat_summary)])
 
 #create variables for the sum of all DMR and background features
-feat_salDMR_total <- sum(feat_summ[which(feat_summ$comparison=="Sal"),"numRegion"])
+feat_salDMR_total <- sum(DMR_feat_summary[which(DMR_feat_summary$comparison=="Sal"),"numRegion"])
 
-feat_tempDMR_total <- sum(feat_summ[which(feat_summ$comparison=="Temp"),"numRegion"])
+feat_tempDMR_total <- sum(DMR_feat_summary[which(DMR_feat_summary$comparison=="Temp"),"numRegion"])
 
-feat_tempxsalDMR_total <- sum(feat_summ[which(feat_summ$comparison=="TempxSal"),"numRegion"])
+feat_tempxsalDMR_total <- sum(DMR_feat_summary[which(DMR_feat_summary$comparison=="TempxSal"),"numRegion"])
 
-feat_tempANDsalDMR_total <- sum(feat_summ[which(feat_summ$comparison=="Temp+Sal"),"numRegion"])
+feat_tempANDsalDMR_total <- sum(DMR_feat_summary[which(DMR_feat_summary$comparison=="Temp+Sal"),"numRegion"])
 
-feat_region_total <- sum(feat_summ[which(feat_summ$comparison=="background"),"numRegion"])
+feat_region_total <- sum(DMR_feat_summary[which(DMR_feat_summary$comparison=="background"),"numRegion"])
 
 #create a table with Chi stats for each feature
 chi_table <- data.frame() #create empty df
-for(i in 1:length(unique(feat_summ$feature))){ #loop through each feature
-  numBKGDReg <-feat_summ[which(feat_summ$comparison=="background"),"numRegion"][i] # variable for number of background regions for specific feature
-  numsalDMRreg <- feat_summ[which(feat_summ$comparison=="Sal"),"numRegion"][i] # variable for number of DMRs for specific feature
-  numtempDMRreg <- feat_summ[which(feat_summ$comparison=="Temp"),"numRegion"][i] # variable for number of DMRs for specific feature
-  numtempxsalDMRreg <- feat_summ[which(feat_summ$comparison=="TempxSal"),"numRegion"][i] # variable for number of DMRs for specific feature
-  numtempANDsalDMRreg <- feat_summ[which(feat_summ$comparison=="Temp+Sal"),"numRegion"][i] # variable for number of DMRs for specific feature
+for(i in 1:length(unique(DMR_feat_summary$feature))){ #loop through each feature
+  numBKGDReg <-DMR_feat_summary[which(DMR_feat_summary$comparison=="background"),"numRegion"][i] # variable for number of background regions for specific feature
+  numsalDMRreg <- DMR_feat_summary[which(DMR_feat_summary$comparison=="Sal"),"numRegion"][i] # variable for number of DMRs for specific feature
+  numtempDMRreg <- DMR_feat_summary[which(DMR_feat_summary$comparison=="Temp"),"numRegion"][i] # variable for number of DMRs for specific feature
+  numtempxsalDMRreg <- DMR_feat_summary[which(DMR_feat_summary$comparison=="TempxSal"),"numRegion"][i] # variable for number of DMRs for specific feature
+  numtempANDsalDMRreg <- DMR_feat_summary[which(DMR_feat_summary$comparison=="Temp+Sal"),"numRegion"][i] # variable for number of DMRs for specific feature
   totsalDMR <- (feat_salDMR_total - numsalDMRreg) # variable for total number background regions in all features minus the number of background regions for specific feature
   tottempDMR <- (feat_tempDMR_total - numtempDMRreg) # variable for total number background regions in all features minus the number of background regions for specific feature
   tottempxsalDMR <- (feat_tempxsalDMR_total - numtempxsalDMRreg) # variable for total number background regions in all features minus the number of background regions for specific feature
@@ -158,19 +166,19 @@ for(i in 1:length(unique(feat_summ$feature))){ #loop through each feature
   print(ct_c)
   print(ct_d)
   x <-  cbind(numBKGDReg,numsalDMRreg,totBKGD,totsalDMR,data.frame(broom::tidy(prop.test(ct_a, correct = FALSE)))) # create data frame storing the Chi sq stats results
-  x$feature <- as.character(feat_summ[which(feat_summ$comparison=="Sal"),"feature"][i]) # add feature name to chi sq df
+  x$feature <- as.character(DMR_feat_summary[which(DMR_feat_summary$comparison=="Sal"),"feature"][i]) # add feature name to chi sq df
   x$comparison <- "Sal"
   colnames(x)[1:4] <- c("numBKGDinFeature", "numDMRinFeature", "numBKGDNOTinFeature", "numDMRNOTinFeature")
   y <-  cbind(numBKGDReg,numtempDMRreg,totBKGD,tottempDMR,data.frame(broom::tidy(prop.test(ct_b, correct = FALSE)))) # create data frame storing the Chi sq stats results
-  y$feature <- as.character(feat_summ[which(feat_summ$comparison=="Temp"),"feature"][i]) # add feature name to chi sq df
+  y$feature <- as.character(DMR_feat_summary[which(DMR_feat_summary$comparison=="Temp"),"feature"][i]) # add feature name to chi sq df
   y$comparison <- "Temp"
   colnames(y)[1:4] <- c("numBKGDinFeature", "numDMRinFeature", "numBKGDNOTinFeature", "numDMRNOTinFeature")
   z <-  cbind(numBKGDReg,numtempxsalDMRreg,totBKGD,tottempxsalDMR,data.frame(broom::tidy(prop.test(ct_c, correct = FALSE)))) # create data frame storing the Chi sq stats results
-  z$feature <- as.character(feat_summ[which(feat_summ$comparison=="TempxSal"),"feature"][i]) # add feature name to chi sq df
+  z$feature <- as.character(DMR_feat_summary[which(DMR_feat_summary$comparison=="TempxSal"),"feature"][i]) # add feature name to chi sq df
   z$comparison <- "TempxSal"
   colnames(z)[1:4] <- c("numBKGDinFeature", "numDMRinFeature", "numBKGDNOTinFeature", "numDMRNOTinFeature")
   w <-  cbind(numBKGDReg,numtempANDsalDMRreg,totBKGD,tottempANDsalDMR,data.frame(broom::tidy(prop.test(ct_d, correct = FALSE)))) # create data frame storing the Chi sq stats results
-  w$feature <- as.character(feat_summ[which(feat_summ$comparison=="Temp+Sal"),"feature"][i]) # add feature name to chi sq df
+  w$feature <- as.character(DMR_feat_summary[which(DMR_feat_summary$comparison=="Temp+Sal"),"feature"][i]) # add feature name to chi sq df
   w$comparison <- "Temp+Sal"
   colnames(w)[1:4] <- c("numBKGDinFeature", "numDMRinFeature", "numBKGDNOTinFeature", "numDMRNOTinFeature")
   chi_table <- rbind(chi_table,x,y,z,w) #add chi sq stats to master table
