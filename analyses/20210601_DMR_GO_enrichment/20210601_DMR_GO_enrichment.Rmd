@@ -1,0 +1,118 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+load libraries
+```{r}
+library(topGO)
+
+
+
+```
+
+Read in tables
+```{r}
+#DMR_GO <- read.table("DMR_uniprot-yourlist M20210601F248CABF64506F29A91F8037F07B67D1029AD2H.tab", sep = "\t", header = T)
+
+
+DMR_GO <- read.table("../../data/DMR_gene_GO.txt", sep = "\t", fill = T)
+
+DEG_sal_GO <- read.table("../../data/DEG_salinity_NCid_GO.bed", sep = "\t", fill = T)
+
+DEG_temp_GO <- read.table("../../data/DEG_temperature_NCid_GO.bed", sep = "\t", fill = T)
+
+
+DMR_sal_GO <- DMR_GO[which(DMR_GO$V4 == "Sal"),]
+DMR_temp_GO <- DMR_GO[which(DMR_GO$V4 == "Temp"),]
+DMR_tempxsal_GO <- DMR_GO[which(DMR_GO$V4 == "TempxSal"),]
+
+```
+
+
+create background
+```{r}
+bkgd_GO <- read.table("../../data/20210601_ssal_chrom-gene_id_start-end-acc-gene-gene_description-go_ids.tab", sep = "\t", fill = T)
+
+
+
+```
+
+
+top GO
+```{r}
+topgo_bkgd <- bkgd_GO[,c("V5","V8")]
+topgo_bkgd$V8 <- gsub(";",",",topgo_bkgd$V8)
+write.table(topgo_bkgd, "TopGO_bkgd.txt", sep = "\t",quote = FALSE, row.names = FALSE, col.names = FALSE)
+geneID2GO_bkgd <- readMappings(file = "TopGO_bkgd.txt")
+#to switch between time and temp run line 66 in time and temp functional analysis scripts
+topgo_sal_DEG <- DEG_sal_GO[,c("V5","V8")]
+topgo_sal_DEG$V8 <- gsub(";",",",topgo_sal_DEG$V8)
+
+geneUniverse <- names(geneID2GO_bkgd)
+
+
+#DEG salinity
+genesOfInterest_sal_DEG <- topgo_sal_DEG
+genesOfInterest_sal_DEG <- as.character(genesOfInterest_sal_DEG$V5)
+geneList_1 <- factor(as.integer(geneUniverse %in% genesOfInterest_sal_DEG))
+names(geneList_1) <- geneUniverse
+myGOdata_1 <- new("topGOdata", description="sal_DEG", ontology="BP", allGenes=geneList_1  ,annot = annFUN.gene2GO, gene2GO = geneID2GO_bkgd)
+resultFisher_1 <- runTest(myGOdata_1, algorithm="weight01", statistic="fisher") 
+allRes_1 <- GenTable(myGOdata_1, weight = resultFisher_1,orderBy = "weight", ranksOf = "classic", topNodes = 50)
+
+#DEG temperature
+
+topgo_temp_DEG <- DEG_temp_GO[,c("V5","V8")]
+topgo_temp_DEG$V8 <- gsub(";",",",topgo_temp_DEG$V8)
+
+genesOfInterest_temp_DEG <- topgo_temp_DEG
+genesOfInterest_temp_DEG <- as.character(genesOfInterest_temp_DEG$V5)
+geneList_2 <- factor(as.integer(geneUniverse %in% genesOfInterest_temp_DEG))
+names(geneList_2) <- geneUniverse
+myGOdata_2 <- new("topGOdata", description="temp_DEG", ontology="BP", allGenes=geneList_2  ,annot = annFUN.gene2GO, gene2GO = geneID2GO_bkgd)
+resultFisher_2 <- runTest(myGOdata_2, algorithm="weight01", statistic="fisher") 
+allRes_2 <- GenTable(myGOdata_2, weight = resultFisher_2,orderBy = "weight", ranksOf = "classic", topNodes = 50)
+
+#DMR temperature
+
+topgo_temp_DMR <- DMR_temp_GO[,c("V13","V16")]
+topgo_temp_DMR$V16 <- gsub(";",",",topgo_temp_DMR$V16)
+
+genesOfInterest_temp_DMR <- topgo_temp_DMR
+genesOfInterest_temp_DMR <- as.character(genesOfInterest_temp_DMR$V13)
+geneList_3 <- factor(as.integer(geneUniverse %in% genesOfInterest_temp_DMR))
+names(geneList_3) <- geneUniverse
+myGOdata_3 <- new("topGOdata", description="temp_DMR", ontology="BP", allGenes=geneList_3  ,annot = annFUN.gene2GO, gene2GO = geneID2GO_bkgd)
+resultFisher_3 <- runTest(myGOdata_3, algorithm="weight01", statistic="fisher") 
+allRes_3 <- GenTable(myGOdata_3, weight = resultFisher_3,orderBy = "weight", ranksOf = "classic", topNodes = 50)
+
+
+
+#sal
+topgo_sal_DMR <- DMR_sal_GO[,c("V13","V16")]
+topgo_sal_DMR$V16 <- gsub(";",",",topgo_sal_DMR$V16)
+
+genesOfInterest_sal_DMR <- topgo_sal_DMR
+genesOfInterest_sal_DMR <- as.character(genesOfInterest_sal_DMR$V13)
+geneList_4 <- factor(as.integer(geneUniverse %in% genesOfInterest_sal_DMR))
+names(geneList_4) <- geneUniverse
+myGOdata_4 <- new("topGOdata", description="temp_DMR", ontology="BP", allGenes=geneList_4  ,annot = annFUN.gene2GO, gene2GO = geneID2GO_bkgd)
+resultFisher_4 <- runTest(myGOdata_4, algorithm="weight01", statistic="fisher") 
+allRes_4 <- GenTable(myGOdata_4, weight = resultFisher_4,orderBy = "weight", ranksOf = "classic", topNodes = 50)
+
+
+#tempxsal
+topgo_salxtemp_DMR <- DMR_tempxsal_GO[,c("V13","V16")]
+topgo_salxtemp_DMR$V16 <- gsub(";",",",topgo_salxtemp_DMR$V16)
+
+genesOfInterest_salxtemp_DMR <- topgo_salxtemp_DMR
+genesOfInterest_salxtemp_DMR <- as.character(genesOfInterest_salxtemp_DMR$V13)
+geneList_5 <- factor(as.integer(geneUniverse %in% genesOfInterest_salxtemp_DMR))
+names(geneList_5) <- geneUniverse
+myGOdata_5 <- new("topGOdata", description="temp_DMR", ontology="BP", allGenes=geneList_5  ,annot = annFUN.gene2GO, gene2GO = geneID2GO_bkgd)
+resultFisher_5 <- runTest(myGOdata_5, algorithm="weight01", statistic="fisher") 
+allRes_5 <- GenTable(myGOdata_5, weight = resultFisher_5,orderBy = "weight", ranksOf = "classic", topNodes = 50)
+
+
+write.table(DMR_sal_GO, "DMR_sal_GO.txt", )
